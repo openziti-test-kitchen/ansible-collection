@@ -1,0 +1,25 @@
+---
+openziti_version: latest
+openziti_supported_os_architecture: 
+  linux:
+    - arm64
+    - arm
+    - amd64
+  windows:
+    - amd64
+  darwin:
+    - amd64
+
+openziti_cache_releases_dir: /tmp/openziti_releases
+openziti_cache_downloads_dir: /tmp/openziti_downloads
+openziti_cache_localhost: true
+openziti_cache_delegate_to: "{% if openziti_download_localhost %}localhost{% else %}{{ groups['ansible_controller'][0] }}{% endif %}"
+
+openziti_os_architecture: "{{ ansible_architecture | replace('aarch', 'arm')}}"
+openziti_os_name: "{{ ansible_system | lower }}"
+openziti_archive_extension: "{{ 'zip' if ansible_system == 'Windows' else 'tar.gz'}}"
+
+openziti_archive_name: "ziti-{{ os_name }}-{{ os_architecture }}-{{ openziti_version }}"
+openziti_binaries_url: "https://github.com/openziti/ziti/releases/download/v{{ openziti_version }}/{{ openziti_archive_name }}.{{ openziti_archive_extension }}"
+
+
