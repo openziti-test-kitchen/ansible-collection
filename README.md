@@ -17,6 +17,13 @@ Then run:
 ansible-galaxy collection install -r requirements.yaml
 ```
 
+You can read the docs using `ansible-doc`:
+
+```bash
+# Example
+ansible-doc -t connection community.openziti.paramikoz
+```
+
 ## Contributing
 
 Please reference the Ansible Collection Structure document here:
