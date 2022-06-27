@@ -17,6 +17,12 @@ Then run:
 ansible-galaxy collection install -r requirements.yaml
 ```
 
+Install Python dependencies
+
+```bash
+pip install --requirements ./ansible_collections/community/openziti/requirements.txt
+```
+
 You can read the docs using `ansible-doc`:
 
 ```bash
