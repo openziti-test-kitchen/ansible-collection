@@ -1,27 +1,51 @@
 ---
 - name: Check remote OS and OS Architecture
-  failed_when: 
+  ansible.builtin.fail: 
+    msg: "Unsupported OS or OS Architecture"
+  when: 
     - openziti_os_name not in openziti_supported_os_architecture.keys()
     - openziti_os_architecture not in openziti_supported_os_architecture[openziti_os_name].values()
 
 - name: Prepare working directories and variables
   import_tasks: prepare_download.yml
 
-- name: Download OpenZiti binaries
+- name: Download OpenZiti binaries on cache server
   ansible.builtin.get_url:
     url: "{{ openziti_binaries_url }}"
     dest: "{{ openziti_cache_downloads_dir }}"
-    deletage_to: "{{ openziti_cache_delegate_to }}"
-    become: "{{ not openziti_cache_localhost }}"
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  become: "{{ not openziti_cache_localhost }}"
+  run_once: true
 
-- name: Unarchive OpenZiti binaries
+- name: Unarchive OpenZiti binaries on cache server
   ansible.builtin.unarchive:
     src: "{{ openziti_cache_downloads_dir }}/{{ openziti_archive_name }}.{{ openziti_archive_extension }}"
-    dest: "{{ openziti_cache_releases_dir }}/{{ openziti_archive_name }}"
-    deletage_to: "{{ openziti_cache_delegate_to }}"
-    owner: "{{ ansible_user_id | default(root)}}"
+    dest: "{{ openziti_cache_releases_dir }}"
+    owner: "ares"
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  become: "{{ not openziti_cache_localhost }}"
+  run_once: true
 
-- name: Copy binaries from cache to nodes
-  
+- name: Copy binaries from cache server to ansible controller
+  ansible.builtin.fetch:
+    src: "{{ openziti_cache_releases_dir }}/{{ item }}"
+    dest: "{{ openziti_cache_releases_dir }}/{{ item }}"
+  with_items: "{{ openziti_components }}"
+  when: not openziti_cache_localhost
+  delegate_to: "localhost"
+  delegate_facts: false
+  become: false
+  run_once: true
+
+- name: Copy binaries from ansible controller to remote host
+  ansible.builtin.copy:
+    src: "{{ openziti_cache_releases_dir }}/ziti/{{ item }}"
+    dest: "{{ openziti_binaries_path_remote }}/{{ item }}"
+  become: true
+  become_user: "root"
+  with_items: "{{ openziti_components | intersect(group_names | map('replace', '_', '-')) }}"
+
 
 

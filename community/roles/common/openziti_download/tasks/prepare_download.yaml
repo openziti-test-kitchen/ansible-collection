@@ -1,6 +1,6 @@
 ---
 
-- name: Set OpenZiti version if latest is provided
+- name: Get OpenZiti version if latest is provided
   ansible.builtin.uri:
     url: https://api.github.com/repos/openziti/ziti/releases/latest
     body_format: json
@@ -12,11 +12,22 @@
     openziti_version: "{{ api_response_payload['json']['tag_name'] | replace('v', '') }}"
   when: openziti_version == "latest"
 
-- name: Create cache directory
-  file:
-    path: "{{ file_path_cached | dirname }}"
+- name: Create cache download directory
+  ansible.builtin.file:
+    path: "{{ openziti_cache_downloads_dir }}"
     state: directory
     recurse: yes
-  delegate_to: "{{ openziti_cache_delegate_to }}"
+  delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
+  become: "{{ not openziti_cache_localhost }}"
+  run_once: true
+
+- name: Create cache releases directory
+  ansible.builtin.file:
+    path: "{{ openziti_cache_releases_dir }}"
+    state: directory
+    recurse: yes
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  become: "{{ not openziti_cache_localhost }}"
   run_once: true
