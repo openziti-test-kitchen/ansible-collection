@@ -6,7 +6,7 @@ from ansible.plugins.connection.paramiko_ssh import \
     Connection as ParamikoConnection
 
 DOCUMENTATION = '''
-    extends_documentation_fragment: paramiko
+    extends_documentation_fragment: community.openziti.paramiko
     options:
       ziti_identities:
         description: ziti identities to use for connection
