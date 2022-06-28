@@ -9,21 +9,8 @@
 - name: Make sure required packages are installed
   import_tasks: required_packages.yml
 
-- name: Set OpenZiti version facts
-  import_tasks: set_openziti_versions.yml
-
-- name: Create downloads and releases directories on cache server
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    recurse: yes
-  delegate_to: "{{ openziti_cache_host }}"
-  delegate_facts: false
-  become: "{{ not openziti_cache_localhost }}"
-  run_once: true
-  loop:
-    - "{{ openziti_cache_release_version_dir }}"
-    - "{{ openziti_cache_downloads_dir }}"
+- name: Make sure required packages are installed
+  import_tasks: prepare_download.yml
 
 - name: Download OpenZiti binaries to cache server
   import_tasks: download_binaries.yml
@@ -32,10 +19,11 @@
   import_tasks: download_console.yml
 
 - name: Copy binaries from ansible controller to remote host
+  become: true
   ansible.builtin.copy:
     src: "{{ openziti_cache_release_version_dir }}/ziti/{{ item }}"
-    dest: "{{ openziti_binaries_path_remote }}/{{ item }}"
-  become: true
+    dest: "{{ openziti_binaries_path_remote }}/"
+    mode: "u=x"
   with_items: "{{ openziti_components | intersect(group_names | map('replace', '_', '-')) }}"
 
 

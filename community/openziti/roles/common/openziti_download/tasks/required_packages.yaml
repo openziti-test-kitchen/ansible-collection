@@ -1,17 +1,17 @@
 ---
 
 - name: Make sure tar is installed on cache server
+  become: true
   ansible.builtin.package:
     name: tar
     state: present
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
-  become: "{{ not openziti_cache_localhost }}"
   run_once: true
 
 - name: Make sure git is installed on ZAC hosts
+  become: true
   ansible.builtin.package:
     name: git
     state: present
-  when: "{{ 'ziti_console' in group_names }}"
-  become: true
+  when: group_names is search("ziti_console")

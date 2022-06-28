@@ -12,7 +12,7 @@ openziti_supported_os_architecture:
     - amd64
 
 openziti_cache_downloads_dir: /tmp/openziti_downloads
-openziti_cache_releases_dir: "/tmp/openziti_releases"
+openziti_cache_releases_dir: /tmp/openziti_releases
 openziti_cache_release_version_dir: "{{openziti_cache_releases_dir}}/{{ openziti_archive_name }}"
 
 openziti_cache_localhost: true
@@ -26,7 +26,7 @@ openziti_archive_name: "ziti-{{ openziti_os_name }}-{{ openziti_os_architecture}
 
 openziti_binaries_url: "https://github.com/openziti/ziti/releases/download/v{{ openziti_version }}/{{ openziti_archive_name }}.{{ openziti_archive_extension }}"
 
-openziti_binaries_path_remote: /usr/local/bin
+openziti_binaries_path_remote: /opt/openziti
 openziti_components:
   - ziti-controller
   - ziti-router
