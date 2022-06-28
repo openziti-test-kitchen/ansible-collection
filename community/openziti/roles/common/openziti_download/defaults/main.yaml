@@ -20,7 +20,7 @@ openziti_cache_host: "{% if openziti_cache_localhost %}localhost{% else %}{{ gro
 
 openziti_os_architecture: "{{ ansible_architecture | replace('aarch', 'arm')}}" # Does aarch always == arm ?
 openziti_os_name: "{{ ansible_system | lower }}"
-openziti_archive_extension: "tar.gz"
+openziti_archive_extension: tar.gz
 
 openziti_archive_name: "ziti-{{ openziti_os_name }}-{{ openziti_os_architecture}}-{{ openziti_version }}"
 
