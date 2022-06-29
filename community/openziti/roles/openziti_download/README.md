@@ -3,12 +3,45 @@ This role downloads the OpenZiti binaries from Github releases and puts each Zit
 
 ## TODO :
 - Find a way to support specific version download from Ziti Console
-
+- Tests with molecule
 
 ## Example playbook & hosts
-ADD EXAMPEL PLAYBOOK HERE
+```
+hosts.yaml :
+
+---
+all:
+  children:
+    dev_server:
+      children:
+        ziti_controller:
+          hosts:
+            master_node_1:
+              ansible_host: XXX.XXX.XXX.XXX
+              ansible_ssh_user: ansible
+        zidi_tunnel:
+          hosts:
+```
+
+```
+---
+- hosts: dev_server
+  roles:
+    - openziti_download
+```
+
+## Troubleshooting
+
+If your cache server is your localhost (ansible controller), you may encounter this error on task "Make sure tar is installed on cache server" :
+```
+Could not detect which package manager to use. Try gathering facts or setting the \"use\" option.
+```
+
+You can fix this by adding `--ask-become-pass` to your `ansible-playbook` command.  
+
 
 ## Role variables
+
  <table>
   <tr>
     <th>Variable</th>
@@ -41,7 +74,7 @@ ADD EXAMPEL PLAYBOOK HERE
   </tr>
   <tr>
     <td>openziti_cache_release_version_dir</td>
-    <td>Computed usin `openziti_cache_releases_dir` and `openziti_archive_name` </td>
+    <td>{{openziti_cache_releases_dir}}/{{ openziti_archive_name }}</td>
     <td>OpenZiti components directory on cache server</td>
   </tr>
   <tr>

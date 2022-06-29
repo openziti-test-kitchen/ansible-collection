@@ -6,7 +6,6 @@
     dest: "{{ openziti_cache_downloads_dir }}"
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
-  become: "{{ not openziti_cache_localhost }}"
   run_once: true
 
 - name: Unarchive OpenZiti binaries on cache server
@@ -16,7 +15,6 @@
     owner: "ares"
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
-  become: "{{ not openziti_cache_localhost }}"
   run_once: true
 
 - name: Copy binaries from cache server to ansible controller
@@ -27,6 +25,5 @@
   when: not openziti_cache_localhost
   delegate_to: "localhost"
   delegate_facts: false
-  become: "{{ not openziti_cache_localhost }}"
   run_once: true
 

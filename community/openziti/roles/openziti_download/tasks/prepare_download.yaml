@@ -18,7 +18,6 @@
     recurse: yes
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
-  become: "{{ not openziti_cache_localhost }}"
   run_once: true
   loop:
     - "{{ openziti_cache_release_version_dir }}"
