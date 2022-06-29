@@ -2,21 +2,21 @@
 import os
 
 import openziti
-from ansible.plugins.connection.paramiko_ssh import \
-    Connection as ParamikoConnection
+from ansible_collections.ansible.netcommon.plugins.connection.libssh import \
+        Connection as LibSSHConnection
 
 DOCUMENTATION = '''
     extends_documentation_fragment:
-      - community.openziti.paramiko
+      - community.openziti.libssh
       - community.openziti.ziti
-    '''
+'''
 
 
-class Connection(ParamikoConnection):
-    '''Ziti based connection wrapper for paramiko_ssh'''
+class Connection(LibSSHConnection):
+    '''Ziti based connection wrapper for libssh'''
     # pylint: disable=import-outside-toplevel
 
-    transport = 'paramikoz'
+    transport = 'libsshz'
 
     def _connect(self):
         '''Wrap connection activation object with ziti'''
