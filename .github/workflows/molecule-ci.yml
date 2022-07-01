@@ -1,0 +1,48 @@
+---
+
+name: Molecule CI
+
+on:
+  push :
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+jobs:
+  get-molecule-jobs:
+    name: Get paths where to run `molecule test`
+    runs-on: ubuntu-latest
+    outputs:
+      matrix-json: ${{ steps.set-molecule-dirs.outputs.molecule-dirs }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: set-molecule-dirs
+        run: echo "::set-output name=molecule-dirs::$(find * -type d -name molecule | sed s,/*[^/]*$,, | jq -R -s -c 'split("\n")[:-1]')"
+
+  ci:
+    needs: [get-molecule-jobs]
+    strategy:
+      fail-fast: false
+      matrix:
+        working-dir: ${{ fromJson(needs.get-molecule-jobs.outputs.matrix-json) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: "${{ github.repository }}"
+
+      - name: Setup Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+
+      - name: Install Molecule
+        run: |
+          pip3 install molecule[docker] docker
+          pip3 install yamllint ansible-lint
+
+      - name: Run molecule tests
+        working-directory: "${{ github.repository }}/${{ matrix.working-dir }}"
+        run: molecule test

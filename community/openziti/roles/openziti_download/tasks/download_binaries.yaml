@@ -4,7 +4,7 @@
   ansible.builtin.get_url:
     url: "{{ openziti_binaries_url }}"
     dest: "{{ openziti_cache_downloads_dir }}"
-    mode: "u=rw"
+    mode: "0700"
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
   run_once: true
@@ -13,7 +13,7 @@
   ansible.builtin.unarchive:
     src: "{{ openziti_cache_downloads_dir }}/{{ openziti_archive_name }}.{{ openziti_archive_extension }}" # yamllint disable-line rule:line-length rule:comments
     dest: "{{ openziti_cache_release_version_dir }}"
-    mode: "u=rw"
+    mode: "0700"
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
   run_once: true
@@ -22,6 +22,7 @@
   ansible.builtin.fetch:
     src: "{{ openziti_cache_release_version_dir }}/{{ item }}"
     dest: "{{ openziti_cache_releases_dir }}/{{ item }}"
+    mode: "0700"
   with_items: "{{ openziti_components }}"
   when: not openziti_cache_localhost
   delegate_to: "localhost"

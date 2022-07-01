@@ -15,7 +15,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    recurse: true
+    mode: "0700"
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
   run_once: true

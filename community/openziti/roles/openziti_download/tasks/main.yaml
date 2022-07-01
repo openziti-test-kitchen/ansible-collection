@@ -22,6 +22,22 @@
   ansible.builtin.copy:
     src: "{{ openziti_cache_release_version_dir }}/ziti/{{ item }}"
     dest: "{{ openziti_binaries_path_remote }}/"
-    mode: "u=x"
-  with_items: "{{ openziti_components | intersect(group_names | map('replace', '_', '-')) }}" # yamllint disable-line rule:line-length rule:comments
+    mode: "0100"
+  with_items: "{{ openziti_components | reject('search', 'ziti-console') | intersect(group_names | map('replace', '_', '-')) }}" # yamllint disable-line rule:line-length rule:comments
+  become: true
+
+- name: Create ziti-console directory on ZAC hosts
+  ansible.builtin.file:
+    path: "{{ openziti_binaries_path_remote }}/ziti-console/"
+    state: directory
+    mode: "0600"
+  when: "'ziti_console' in group_names"
+  become: true
+
+- name: Unarchive OpenZiti console on ZAC hosts
+  ansible.builtin.unarchive:
+    src: "{{ openziti_cache_release_version_dir }}/ziti/ziti-console.{{ openziti_archive_extension }}" # yamllint disable-line rule:line-length rule:comments
+    dest: "{{ openziti_binaries_path_remote }}/ziti-console/"
+    mode: "0100"
+  when: "'ziti_console' in group_names"
   become: true

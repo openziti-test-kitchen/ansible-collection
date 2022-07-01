@@ -1,11 +1,43 @@
 ---
 # TODO : Add support for OpenZiti Console specific version usage
 
-- name: Clone OpenZiti Console repository on cache server
+# Step Below :
+# ansible.builtin.git module using archive doesn't seem to be idempotent
+# Open issue https://github.com/ansible/ansible/issues/78190
+
+- name: Check if OpenZiti Console archive exists on cache serve
+  ansible.builtin.stat:
+    path: "{{ openziti_cache_downloads_dir }}/ziti-console/ziti-console.{{ openziti_archive_extension }}" # yamllint disable-line rule:line-length rule:comments
+  register: archive_exists
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+
+- name: Clone OpenZiti Console repository on cache server / archive
   ansible.builtin.git:
     repo: "{{ openziti_console_repository }}.git"
-    dest: "{{ openziti_cache_release_version_dir }}/ziti/ziti-console"
+    dest: "{{ openziti_cache_downloads_dir }}/ziti-console"
     version: "{{ openziti_console_branch_name }}"
+    archive: "ziti-console.{{ openziti_archive_extension }}"
+  when: not archive_exists.stat.exists
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+
+- name: Clone OpenZiti Console repository on cache server / no archive
+  ansible.builtin.git:
+    repo: "{{ openziti_console_repository }}.git"
+    dest: "{{ openziti_cache_downloads_dir }}/ziti-console"
+    version: "{{ openziti_console_branch_name }}"
+  when: archive_exists.stat.exists
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+
+- name: Copy OpenZiti Console to releases dir
+  ansible.builtin.copy:
+    src: "{{ openziti_cache_downloads_dir }}/ziti-console/ziti-console.{{ openziti_archive_extension }}" # yamllint disable-line rule:line-length rule:comments
+    dest: "{{ openziti_cache_release_version_dir }}/ziti/ziti-console.{{ openziti_archive_extension }}" # yamllint disable-line rule:line-length rule:comments
+    mode: "0700"
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
   run_once: true

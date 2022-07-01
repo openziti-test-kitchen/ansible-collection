@@ -35,7 +35,7 @@ openziti_binaries_path_remote: /opt/openziti
 openziti_components:
   - ziti-controller
   - ziti-router
-  - zidi-tunnel
+  - ziti-tunnel
   - ziti
   - ziti-console
 

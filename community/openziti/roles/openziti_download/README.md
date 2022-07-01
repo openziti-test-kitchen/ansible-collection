@@ -3,7 +3,7 @@ This role downloads the OpenZiti binaries from Github releases and puts each Zit
 
 ## TODO :
 - Find a way to support specific version download from Ziti Console
-- Tests with molecule
+- Maybe set OpenZiti components in host vars and not host groups
 
 ## Example playbook & hosts
 ```
@@ -17,7 +17,7 @@ all:
             master_node_1:
               ansible_host: XXX.XXX.XXX.XXX
               ansible_ssh_user: ansible
-        zidi_tunnel:
+        ziti_tunnel:
           hosts:
 ```
 
@@ -27,16 +27,6 @@ all:
   roles:
     - openziti_download
 ```
-
-## Troubleshooting
-
-If your cache server is your localhost (ansible controller), you may encounter this error on task "Make sure tar is installed on cache server" :
-```
-Could not detect which package manager to use. Try gathering facts or setting the \"use\" option.
-```
-
-You can fix this by adding `--ask-become-pass` to your `ansible-playbook` command.  
-
 
 ## Role variables
 
