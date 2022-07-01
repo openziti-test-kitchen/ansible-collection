@@ -1,10 +1,10 @@
 ---
 - name: Check remote OS and OS Architecture
-  ansible.builtin.fail: 
+  ansible.builtin.fail:
     msg: "Unsupported OS or OS Architecture"
-  when: 
+  when:
     - openziti_os_name not in openziti_supported_os_architecture.keys()
-    - openziti_os_architecture not in openziti_supported_os_architecture[openziti_os_name].values()
+    - openziti_os_architecture not in openziti_supported_os_architecture[openziti_os_name].values() # yamllint disable-line rule:line-length rule:comments
 
 - name: Make sure required packages are installed
   import_tasks: required_packages.yaml
@@ -23,13 +23,5 @@
     src: "{{ openziti_cache_release_version_dir }}/ziti/{{ item }}"
     dest: "{{ openziti_binaries_path_remote }}/"
     mode: "u=x"
-  with_items: "{{ openziti_components | intersect(group_names | map('replace', '_', '-')) }}"
+  with_items: "{{ openziti_components | intersect(group_names | map('replace', '_', '-')) }}" # yamllint disable-line rule:line-length rule:comments
   become: true
-
-
-
-
-
-
-
-

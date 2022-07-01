@@ -7,8 +7,6 @@ This role downloads the OpenZiti binaries from Github releases and puts each Zit
 
 ## Example playbook & hosts
 ```
-hosts.yaml :
-
 ---
 all:
   children:
@@ -81,6 +79,11 @@ You can fix this by adding `--ask-become-pass` to your `ansible-playbook` comman
     <td>openziti_cache_localhost</td>
     <td>true</td>
     <td>Whether to use localhost as Cache server</br>Is set to "false", must set a group 'cache_server' on hosts file</td>
+  </tr>
+  <tr>
+    <td>openziti_os_architecture_mapping</td>
+    <td>x86_64 -> amd64, aarch64 -> arm64, aarch -> arm</td>
+    <td>OS Architecture mapping</td>
   </tr>
   <tr>
     <td>openziti_os_architecture</td>

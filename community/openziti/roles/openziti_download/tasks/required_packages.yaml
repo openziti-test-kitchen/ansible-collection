@@ -6,12 +6,12 @@
     state: present
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
-  become: true
   run_once: true
 
-- name: Make sure git is installed on ZAC hosts
+- name: Make sure git is installed on cache server
   ansible.builtin.package:
     name: git
     state: present
-  when: group_names is search("ziti_console")
-  become: true
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true

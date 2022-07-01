@@ -7,15 +7,15 @@
   when: openziti_version == "latest"
 
 - name: Set OpenZiti binaries binaries version if latest is provided
-  set_fact:
-    openziti_version: "{{ api_response_payload['json']['tag_name'] | replace('v', '') }}"
+  ansible.builtin.set_fact:
+    openziti_version: "{{ api_response_payload['json']['tag_name'] | replace('v', '') }}" # yamllint disable-line rule:line-length rule:comments
   when: openziti_version == "latest"
 
 - name: Create downloads and releases directories on cache server
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    recurse: yes
+    recurse: true
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
   run_once: true

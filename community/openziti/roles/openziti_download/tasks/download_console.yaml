@@ -6,3 +6,6 @@
     repo: "{{ openziti_console_repository }}.git"
     dest: "{{ openziti_cache_release_version_dir }}/ziti/ziti-console"
     version: "{{ openziti_console_branch_name }}"
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true

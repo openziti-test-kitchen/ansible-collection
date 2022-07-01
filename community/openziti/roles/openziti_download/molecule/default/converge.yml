@@ -1,0 +1,8 @@
+---
+
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "OpenZiti Download role"
+      include_role:
+        name: "openziti_download"
