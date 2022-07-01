@@ -1,0 +1,17 @@
+---
+
+- name: Make sure tar is installed on cache server
+  ansible.builtin.package:
+    name: tar
+    state: present
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+
+- name: Make sure git is installed on cache server
+  ansible.builtin.package:
+    name: git
+    state: present
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true

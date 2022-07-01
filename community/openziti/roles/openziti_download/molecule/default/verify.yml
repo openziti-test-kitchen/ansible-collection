@@ -1,0 +1,16 @@
+---
+
+- name: Verify
+  hosts: all
+  vars:
+    openziti_components:
+      - ziti-controller
+      - ziti-router
+      - zidi-tunnel
+      - ziti
+      - ziti-console
+  tasks:
+    - name: Verify that OpenZiti components are present on remote hosts
+      ansible.builtin.stat:
+        path: "{{ openziti_binaries_path_remote }}/{{ item }}"
+      with_items: "{{ openziti_components | intersect(group_names | map('replace', '_', '-')) }}" # yamllint disable-line rule:line-length rule:comments

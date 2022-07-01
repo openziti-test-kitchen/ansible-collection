@@ -1,0 +1,27 @@
+---
+- name: Check remote OS and OS Architecture
+  ansible.builtin.fail:
+    msg: "Unsupported OS or OS Architecture"
+  when:
+    - openziti_os_name not in openziti_supported_os_architecture.keys()
+    - openziti_os_architecture not in openziti_supported_os_architecture[openziti_os_name].values() # yamllint disable-line rule:line-length rule:comments
+
+- name: Make sure required packages are installed
+  import_tasks: required_packages.yaml
+
+- name: Make sure required packages are installed
+  import_tasks: prepare_download.yaml
+
+- name: Download OpenZiti binaries to cache server
+  import_tasks: download_binaries.yaml
+
+- name: Download OpenZiti console to cache server
+  import_tasks: download_console.yaml
+
+- name: Copy binaries from ansible controller to remote host
+  ansible.builtin.copy:
+    src: "{{ openziti_cache_release_version_dir }}/ziti/{{ item }}"
+    dest: "{{ openziti_binaries_path_remote }}/"
+    mode: "u=x"
+  with_items: "{{ openziti_components | intersect(group_names | map('replace', '_', '-')) }}" # yamllint disable-line rule:line-length rule:comments
+  become: true

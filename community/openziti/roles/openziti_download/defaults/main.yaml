@@ -1,0 +1,44 @@
+---
+openziti_version: latest
+openziti_supported_os_architecture:
+  linux:
+    - arm64
+    - arm
+    - amd64
+  # Role doesn't support windows hosts currently
+  # windows:
+  #  - amd64
+  darwin:
+    - amd64
+
+openziti_cache_downloads_dir: /tmp/openziti_downloads
+openziti_cache_releases_dir: /tmp/openziti_releases
+openziti_cache_release_version_dir: "{{ openziti_cache_releases_dir }}/{{ openziti_archive_name }}" # yamllint disable-line rule:line-length rule:comments
+
+openziti_cache_localhost: true
+openziti_cache_host: "{% if openziti_cache_localhost %}localhost{% else %}{{ groups['cache_server'][0] }}{% endif %}" # yamllint disable-line rule:line-length rule:comments
+
+openziti_os_architecture_mapping:
+  x86_64: 'amd64'
+  aarch64: 'arm64'
+  aarch: 'arm'
+openziti_os_architecture: "{{  openziti_os_architecture_mapping[ansible_architecture] | default(ansible_architecture) }}" # yamllint disable-line rule:line-length rule:comments
+
+openziti_os_name: "{{ ansible_system | lower }}"
+openziti_archive_extension: tar.gz
+
+openziti_archive_name: "ziti-{{ openziti_os_name }}-{{ openziti_os_architecture }}-{{ openziti_version }}" # yamllint disable-line rule:line-length rule:comments
+
+openziti_binaries_url: "https://github.com/openziti/ziti/releases/download/v{{ openziti_version }}/{{ openziti_archive_name }}.{{ openziti_archive_extension }}" # yamllint disable-line rule:line-length rule:comments
+
+openziti_binaries_path_remote: /opt/openziti
+openziti_components:
+  - ziti-controller
+  - ziti-router
+  - zidi-tunnel
+  - ziti
+  - ziti-console
+
+openziti_console_version: latest
+openziti_console_branch_name: master
+openziti_console_repository: "https://github.com/openziti/ziti-console"
