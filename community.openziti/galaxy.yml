@@ -1,0 +1,21 @@
+namespace: community
+name: openziti
+version: 0.1.0
+readme: README.md
+authors:
+- NetFoundry <support@netfoundry.io>
+description: Orchestrate your OpenZiti Network with self-hosted OpenZiti OSS
+license:
+- Apache-2.0
+license_file: LICENSE
+tags:
+- zero_trust
+- networking
+- openziti
+- security
+dependencies: {}
+repository: https://github.com/openziti-test-kitchen/ansible-collection
+documentation: https://github.com/openziti-test-kitchen/ansible-collection/blob/main/README.md
+homepage: https://openziti.io
+issues: https://github.com/openziti-test-kitchen/ansible-collection/issues
+build_ignore: []
