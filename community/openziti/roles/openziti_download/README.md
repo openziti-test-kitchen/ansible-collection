@@ -17,8 +17,12 @@ all:
             master_node_1:
               ansible_host: XXX.XXX.XXX.XXX
               ansible_ssh_user: ansible
+              ansible_become_password: # use vault
         ziti_tunnel:
           hosts:
+        cache_server:
+          XXX.XXX.XXX.XXX:
+            ansible_become_password: # use vault
 ```
 
 ```
