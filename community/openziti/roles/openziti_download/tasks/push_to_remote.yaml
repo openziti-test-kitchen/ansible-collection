@@ -1,0 +1,35 @@
+---
+
+- name: Select binaries and remote_server_path from openziti components variable
+  vars:
+    host_components: "{{ item.value.binaries | \
+      intersect(openziti_components) }}"
+    components_paths: "{% for component in host_components %}\
+      {'openziti_component': '{{ component }}', \
+      'path': '{{ item.value.remote_server_path }}'},\
+      {% endfor %}"
+  ansible.builtin.set_fact:
+    download_components: "{{ download_components | \
+      d([]) + [components_paths] }}"
+  loop: "{{ openziti | dict2items | selectattr('value.binaries', 'defined') }}"
+
+- name: Copy binaries to remote hosts
+  ansible.builtin.copy:
+    src: "{{ openziti_controller_dir }}/{{ item.openziti_component }}"
+    dest: "{{ item.path }}/"
+    mode: "0744"
+  with_items: "{{ download_components }}"
+  when: item != ''
+  become: true
+
+- name: Unarchive OpenZiti console on ZAC hosts
+  vars:
+    openziti_console: "{{ openziti.console }}"
+  ansible.builtin.unarchive:
+    src: "{{ openziti_controller_dir }}/\
+      {{ openziti_console.archive_file_name }}\
+      .{{ openziti_console.archive_extension }}"
+    dest: "{{ openziti_console.remote_server_path }}"
+    mode: "0744"
+  when: "'ziti-console' in openziti_components"
+  become: true

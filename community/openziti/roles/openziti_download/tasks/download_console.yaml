@@ -5,19 +5,23 @@
 # ansible.builtin.git module using archive doesn't seem to be idempotent
 # Open issue https://github.com/ansible/ansible/issues/78190
 
-- name: Check if OpenZiti Console archive exists on cache serve
+- name: Check if OpenZiti Console archive exists on cache server
   ansible.builtin.stat:
-    path: "{{ openziti_cache_downloads_dir }}/ziti-console/ziti-console.{{ openziti_archive_extension }}" # yamllint disable-line rule:line-length rule:comments
+    path: "{{ openziti_component.cache_server_path }}/\
+      {{ openziti_component.archive_file_name }}\
+      .{{ openziti_component.archive_extension }}"
   register: archive_exists
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
 
 - name: Clone OpenZiti Console repository on cache server / archive
   ansible.builtin.git:
-    repo: "{{ openziti_console_repository }}.git"
-    dest: "{{ openziti_cache_downloads_dir }}/ziti-console"
-    version: "{{ openziti_console_branch_name }}"
-    archive: "ziti-console.{{ openziti_archive_extension }}"
+    repo: "{{ openziti_component.download_url }}"
+    dest: "{{ openziti_component.cache_server_path }}"
+    version: "{{ openziti_component.version }}"
+    archive: "{{ openziti_component.cache_server_path }}/\
+      {{ openziti_component.archive_file_name }}\
+      .{{ openziti_component.archive_extension }}"
   when: not archive_exists.stat.exists
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
@@ -25,19 +29,44 @@
 
 - name: Clone OpenZiti Console repository on cache server / no archive
   ansible.builtin.git:
-    repo: "{{ openziti_console_repository }}.git"
-    dest: "{{ openziti_cache_downloads_dir }}/ziti-console"
-    version: "{{ openziti_console_branch_name }}"
+    repo: "{{ openziti_component.download_url }}"
+    dest: "{{ openziti_component.cache_server_path }}"
+    version: "{{ openziti_component.version }}"
   when: archive_exists.stat.exists
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
   run_once: true
 
-- name: Copy OpenZiti Console to releases dir
+- name: Copy OpenZiti Console to ansible controller
   ansible.builtin.copy:
-    src: "{{ openziti_cache_downloads_dir }}/ziti-console/ziti-console.{{ openziti_archive_extension }}" # yamllint disable-line rule:line-length rule:comments
-    dest: "{{ openziti_cache_release_version_dir }}/ziti/ziti-console.{{ openziti_archive_extension }}" # yamllint disable-line rule:line-length rule:comments
+    src: "{{ openziti_component.cache_server_path }}/\
+      {{ openziti_component.archive_file_name }}\
+      .{{ openziti_component.archive_extension }}"
+    dest: "{{ openziti_controller_dir }}/\
+      {{ openziti_component.archive_file_name }}\
+      .{{ openziti_component.archive_extension }}"
     mode: "0700"
+    remote_src: "{{ not openziti_cache_localhost }}"
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
   run_once: true
+
+- name: Add metadata
+  ansible.builtin.lineinfile:
+    path: "{{ openziti_controller_dir }}/{{ openziti_metadata_file_name }}"
+    line: "{{ openziti_component.name }}={{ openziti_component.version }}"
+    regexp: "^{{ openziti_component.name }}=\
+      (?!{{ openziti_component.version }})$"
+    mode: "0644"
+    create: true
+  delegate_to: "localhost"
+  delegate_facts: false
+  run_once: true
+
+- name: Create ziti-console directory on ZAC hosts
+  ansible.builtin.file:
+    path: "{{ openziti_component.remote_server_path }}"
+    state: directory
+    mode: "0755"
+  when: "'ziti-console' in openziti_components"
+  become: true

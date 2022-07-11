@@ -8,21 +8,10 @@ platforms:
   - name: ubuntu_amd64
     image: docker.io/amd64/ubuntu
     pre_build_image: false
-    groups:
-      - ziti_controller
-      - ziti_router
-      - ziti_tunnel
-      - ziti
-      - ziti_console
 
   - name: oracle_amd64
     image: docker.io/amd64/oraclelinux:8
     pre_build_image: false
-    groups:
-      - ziti_controller
-      - ziti_router
-      - ziti_tunnel
-      - ziti
 
 provisioner:
   name: ansible
@@ -30,8 +19,22 @@ provisioner:
     host_vars:
       ubuntu_amd64:
         ansible_user: ansible
+        openziti_components:
+          - ziti-controller
+          - ziti-router
+          - ziti-tunnel
+          - ziti
+          - ziti-console
+          - ziti-edge-tunnel
       oracle_amd64:
         ansible_user: ansible
+        openziti_components:
+          - ziti-controller
+          - ziti-router
+          - ziti-tunnel
+          - ziti
+          - ziti-console
+          - ziti-edge-tunnel
 verifier:
   name: ansible
 lint: |

@@ -1,43 +1,24 @@
 ---
-- name: Check remote OS and OS Architecture
-  ansible.builtin.fail:
-    msg: "Unsupported OS or OS Architecture"
-  when:
-    - openziti_os_name not in openziti_supported_os_architecture.keys()
-    - openziti_os_architecture not in openziti_supported_os_architecture[openziti_os_name].values() # yamllint disable-line rule:line-length rule:comments
+- name: Required Packages | Install
+  include_tasks: required_packages.yaml
 
-- name: Make sure required packages are installed
-  import_tasks: required_packages.yaml
+- name: Prepare Download | Create directories
+  include_tasks: prepare_download.yaml
 
-- name: Make sure required packages are installed
-  import_tasks: prepare_download.yaml
+- name: Cache Server | Download zac
+  vars:
+    openziti_component: "{{ openziti.console }}"
+  include_tasks: download_console.yaml
 
-- name: Download OpenZiti binaries to cache server
-  import_tasks: download_binaries.yaml
+- name: Cache Server | Download OpenZiti Core
+  vars:
+    openziti_component: "{{ openziti.core }}"
+  include_tasks: download_binaries.yaml
 
-- name: Download OpenZiti console to cache server
-  import_tasks: download_console.yaml
+- name: Cache Server | Download OpenZiti Edge Tunnel
+  vars:
+    openziti_component: "{{ openziti.edge_tunnel }}"
+  include_tasks: download_binaries.yaml
 
-- name: Copy binaries from ansible controller to remote host
-  ansible.builtin.copy:
-    src: "{{ openziti_cache_release_version_dir }}/ziti/{{ item }}"
-    dest: "{{ openziti_binaries_path_remote }}/"
-    mode: "0100"
-  with_items: "{{ openziti_components | reject('search', 'ziti-console') | intersect(group_names | map('replace', '_', '-')) }}" # yamllint disable-line rule:line-length rule:comments
-  become: true
-
-- name: Create ziti-console directory on ZAC hosts
-  ansible.builtin.file:
-    path: "{{ openziti_binaries_path_remote }}/ziti-console/"
-    state: directory
-    mode: "0600"
-  when: "'ziti_console' in group_names"
-  become: true
-
-- name: Unarchive OpenZiti console on ZAC hosts
-  ansible.builtin.unarchive:
-    src: "{{ openziti_cache_release_version_dir }}/ziti/ziti-console.{{ openziti_archive_extension }}" # yamllint disable-line rule:line-length rule:comments
-    dest: "{{ openziti_binaries_path_remote }}/ziti-console/"
-    mode: "0100"
-  when: "'ziti_console' in group_names"
-  become: true
+- name: Remote Hosts | Push from cache server
+  include_tasks: push_to_remote.yaml

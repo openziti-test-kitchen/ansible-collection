@@ -1,44 +1,156 @@
 ---
-openziti_version: latest
-openziti_supported_os_architecture:
-  linux:
-    - arm64
-    - arm
-    - amd64
-  # Role doesn't support windows hosts currently
-  # windows:
-  #  - amd64
-  darwin:
-    - amd64
 
+openziti_core_version: latest
+openziti_edge_tunnel_version: latest
+openziti_console_version: master  # Branch name
+
+openziti_remote_path: /opt/openziti
 openziti_cache_downloads_dir: /tmp/openziti_downloads
 openziti_cache_releases_dir: /tmp/openziti_releases
-openziti_cache_release_version_dir: "{{ openziti_cache_releases_dir }}/{{ openziti_archive_name }}" # yamllint disable-line rule:line-length rule:comments
+openziti_controller_dir: "{{ openziti_cache_releases_dir }}/remote_install"
 
 openziti_cache_localhost: true
-openziti_cache_host: "{% if openziti_cache_localhost %}localhost{% else %}{{ groups['cache_server'][0] }}{% endif %}" # yamllint disable-line rule:line-length rule:comments
+
+# Below variable are constants
+# /!\ DO NOT EDIT THEM /!\
+# Unless you know what you're doing
+
+openziti_metadata_file_name: "versions.info"  # Can be useful for update
+
+openziti_repository_url: "https://github.com/openziti"
+openziti_metadata_api:
+  base: "https://api.github.com/repos/openziti"
+  path: "releases/latest"
+
+openziti_cache_host: "\
+  {% if openziti_cache_localhost %}\
+  localhost\
+  {% else %}\
+  {{ groups['cache_server'][0] }}\
+  {% endif %}"
 
 openziti_os_architecture_mapping:
-  x86_64: 'amd64'
-  aarch64: 'arm64'
-  aarch: 'arm'
-openziti_os_architecture: "{{  openziti_os_architecture_mapping[ansible_architecture] | default(ansible_architecture) }}" # yamllint disable-line rule:line-length rule:comments
+  core:
+    x86_64: 'amd64'
+    aarch64: 'arm64'
+    aarch: 'arm'
+  edge_tunnel:
+    aarch64: 'arm64'
+    aarch: 'arm'
 
-openziti_os_name: "{{ ansible_system | lower }}"
-openziti_archive_extension: tar.gz
+openziti_archive_name_prefix:
+  core: ziti
+  edge_tunnel: ziti-edge-tunnel
 
-openziti_archive_name: "ziti-{{ openziti_os_name }}-{{ openziti_os_architecture }}-{{ openziti_version }}" # yamllint disable-line rule:line-length rule:comments
+openziti_repository_name:
+  core: ziti
+  edge_tunnel: ziti-tunnel-sdk-c
+  console: ziti-console
 
-openziti_binaries_url: "https://github.com/openziti/ziti/releases/download/v{{ openziti_version }}/{{ openziti_archive_name }}.{{ openziti_archive_extension }}" # yamllint disable-line rule:line-length rule:comments
+openziti_version_name:
+  core: openziti_core_version
+  edge_tunnel: openziti_edge_tunnel_version
+  console: openziti_console_version
 
-openziti_binaries_path_remote: /opt/openziti
-openziti_components:
-  - ziti-controller
-  - ziti-router
-  - ziti-tunnel
-  - ziti
-  - ziti-console
+openziti_version:
+  core: "{{ openziti_core_version }}"
+  edge_tunnel: "{{ openziti_edge_tunnel_version }}"
+  console: "{{ openziti_console_version }}"
 
-openziti_console_version: latest
-openziti_console_branch_name: master
-openziti_console_repository: "https://github.com/openziti/ziti-console"
+openziti_os_name:
+  core: "{{ ansible_system | lower }}"
+  edge_tunnel: "{{ ansible_system }}"
+
+openziti_os_architecture:
+  core: "{{ openziti_os_architecture_mapping['core'][ansible_architecture] | default(ansible_architecture) }}"
+  edge_tunnel: "{{ openziti_os_architecture_mapping['edge_tunnel'][ansible_architecture] | default(ansible_architecture) }}"
+
+openziti_archive_extension:
+  core: "tar.gz"
+  edge_tunnel: "zip"
+  console: "tar.gz"
+
+openziti_archive_file_name:
+  core: "{{ openziti_archive_name_prefix.core }}-{{ openziti_os_name.core }}-{{ openziti_os_architecture.core }}-{{ openziti_version.core }}"
+  edge_tunnel: "{{ openziti_archive_name_prefix.edge_tunnel }}-{{ openziti_os_name.edge_tunnel }}_{{ openziti_os_architecture.edge_tunnel }}"
+  console: "{{ openziti_repository_name.console }}"
+
+openziti_metadata_api_url:
+  core: "{{ openziti_metadata_api['base'] }}/{{ openziti_repository_name.core }}/{{ openziti_metadata_api['path'] }}"
+  edge_tunnel: "{{ openziti_metadata_api['base'] }}/{{ openziti_repository_name.edge_tunnel }}/{{ openziti_metadata_api['path'] }}"
+
+openziti_download_url:
+  core: "{{ openziti_repository_url }}/{{ openziti_repository_name.core }}/releases/download/v{{ openziti_version.core }}/{{ openziti_archive_file_name.core }}.{{ openziti_archive_extension.core }}"
+  edge_tunnel: "{{ openziti_repository_url }}/{{ openziti_repository_name.edge_tunnel }}/releases/download/v{{ openziti_version.edge_tunnel }}/{{ openziti_archive_file_name.edge_tunnel }}.{{ openziti_archive_extension.edge_tunnel }}"
+  console: "{{ openziti_repository_url }}/{{ openziti_repository_name.console }}.git"
+
+openziti_cache_server_directory:
+  core: "{{ openziti_archive_file_name.core }}"
+  edge_tunnel: "{{ openziti_repository_name.edge_tunnel }}-{{ openziti_os_name.edge_tunnel }}-{{ openziti_os_architecture.edge_tunnel }}-{{ openziti_version.edge_tunnel }}"
+  console: "{{ openziti_archive_file_name.console }}"
+
+openziti_cache_server_path:
+  core: "{{ openziti_cache_releases_dir }}/{{ openziti_cache_server_directory.core }}"
+  edge_tunnel: "{{ openziti_cache_releases_dir }}/{{ openziti_cache_server_directory.edge_tunnel }}"
+  console: "{{ openziti_cache_releases_dir }}/{{ openziti_cache_server_directory.console }}"
+
+openziti_remote_server_path:
+  core: "{{ openziti_remote_path }}/bin/"
+  edge_tunnel: "{{ openziti_remote_path }}/bin/"
+  console: "{{ openziti_remote_path }}/ziti-console"
+
+openziti_binaries:
+  core:
+    ziti: ziti/ziti
+    ziti-controller: ziti/ziti-controller
+    ziti-router: ziti/ziti-router
+    ziti-tunnel: ziti/ziti-tunnel
+  edge_tunnel:
+    ziti-edge-tunnel: ziti-edge-tunnel
+
+# Making variables usage easier with a dict
+openziti:
+  core:
+    name: openziti_core
+    repository_name: "{{ openziti_repository_name.core }}"
+    version_name: "{{ openziti_version_name.core }}"
+    version: "{{ openziti_version.core }}"
+    os_name: "{{ openziti_os_name.core }}"
+    os_architecture: "{{ openziti_os_architecture.core }}"
+    archive_extension: "{{ openziti_archive_extension.core }}"
+    archive_file_name: "{{ openziti_archive_file_name.core }}"
+    metadata_api_url: "{{ openziti_metadata_api_url.core }}"
+    download_url: "{{ openziti_download_url.core }}"
+    cache_server_directory: "{{ openziti_cache_server_directory.core }}"
+    cache_server_path: "{{ openziti_cache_server_path.core }}"
+    remote_server_path: "{{ openziti_remote_server_path.core }}"
+    binaries: "{{ openziti_binaries.core }}"
+
+
+  edge_tunnel:
+    name: openziti_edge_tunnel
+    repository_name: "{{ openziti_repository_name.edge_tunnel }}"
+    version_name: "{{ openziti_version_name.edge_tunnel }}"
+    version: "{{ openziti_version.edge_tunnel }}"
+    os_name: "{{ openziti_os_name.edge_tunnel }}"
+    os_architecture: "{{ openziti_os_architecture.edge_tunnel }}"
+    archive_extension: "{{ openziti_archive_extension.edge_tunnel }}"
+    archive_file_name: "{{ openziti_archive_file_name.edge_tunnel }}"
+    metadata_api_url: "{{ openziti_metadata_api_url.edge_tunnel }}"
+    download_url: "{{ openziti_download_url.edge_tunnel }}"
+    cache_server_directory: "{{ openziti_cache_server_directory.edge_tunnel }}"
+    cache_server_path: "{{ openziti_cache_server_path.edge_tunnel }}"
+    remote_server_path: "{{ openziti_remote_server_path.edge_tunnel }}"
+    binaries: "{{ openziti_binaries.edge_tunnel }}"
+
+  console:
+    name: openziti_console
+    repository_name: "{{ openziti_repository_name.console }}"
+    version_name: "{{ openziti_version_name.console }}"
+    version: "{{ openziti_version.console }}"
+    archive_extension: "{{ openziti_archive_extension.console }}"
+    archive_file_name: "{{ openziti_archive_file_name.console }}"
+    download_url: "{{ openziti_download_url.console }}"
+    cache_server_directory: "{{ openziti_cache_server_directory.console }}"
+    cache_server_path: "{{ openziti_cache_server_path.console }}"
+    remote_server_path: "{{ openziti_remote_server_path.console }}"

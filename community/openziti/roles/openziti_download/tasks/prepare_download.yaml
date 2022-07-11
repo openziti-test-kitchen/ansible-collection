@@ -1,24 +1,22 @@
 ---
-- name: Get OpenZiti version if latest is provided
-  ansible.builtin.uri:
-    url: https://api.github.com/repos/openziti/ziti/releases/latest
-    body_format: json
-  register: api_response_payload
-  when: openziti_version == "latest"
 
-- name: Set OpenZiti binaries binaries version if latest is provided
-  ansible.builtin.set_fact:
-    openziti_version: "{{ api_response_payload['json']['tag_name'] | replace('v', '') }}" # yamllint disable-line rule:line-length rule:comments
-  when: openziti_version == "latest"
-
-- name: Create downloads and releases directories on cache server
+- name: Create downloads and release directory on cache server
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: "0700"
+    mode: "755"
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
   run_once: true
   loop:
-    - "{{ openziti_cache_release_version_dir }}"
     - "{{ openziti_cache_downloads_dir }}"
+    - "{{ openziti_cache_releases_dir }}"
+
+- name: Create remote_install directory on ansible controller
+  ansible.builtin.file:
+    path: "{{ openziti_controller_dir }}"
+    state: directory
+    mode: "755"
+  delegate_to: "localhost"
+  delegate_facts: false
+  run_once: true
