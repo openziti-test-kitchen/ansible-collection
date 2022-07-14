@@ -1,3 +1,5 @@
+---
+
 - hosts: '{{ target | default("all") }}'
   roles:
     - openziti_download

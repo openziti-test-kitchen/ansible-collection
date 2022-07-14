@@ -14,8 +14,6 @@
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
   become: true
-  vars:
-    ansible_become_pass: "lilou"
 
 - name: Make sure git is installed on cache server
   ansible.builtin.package:
@@ -24,5 +22,3 @@
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
   become: true
-  vars:
-    ansible_become_pass: "lilou"

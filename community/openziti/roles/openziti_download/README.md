@@ -6,7 +6,15 @@ This role downloads the OpenZiti binaries from Github releases and puts each Zit
 - Maybe set OpenZiti components in host vars and not host groups
 - Support version upgrades
 
-## Example hosts
+## Usage
+
+### Sudo Password
+Some tasks needs to be executed with sudo privileges, when using this role, make sure you have a safe way of storing your sudo passwords.
+For example, you could use `ansible-vault` and update your hosts file with the key-value `ansible_become_pass="{{ my_host_become_pass }}"`.
+
+When using your localhost as the `cache-server` (i.e `openziti_cache_localhost` = `true`), run your playbooks with `-K` option, because this role needs sudo privileges to execture some tasks on the caching server.
+
+### Example hosts
 ```
 ---
 all:
@@ -16,6 +24,7 @@ all:
         host_one:
           ansible_host: XXX.XX.XXX.XXX
           ansible_ssh_user: XXXXX
+          ansible_become_pass="{{ host_one_become_pass }}"
           openziti_components:
             - ziti-controller
             - ziti-router
@@ -25,10 +34,11 @@ all:
         host_two:
           ansible_host: XXX.XX.XXX.XXX
           ansible_ssh_user: XXXXX
+          ansible_become_pass="{{ host_two_become_pass }}"
           openziti_components:
             - ziti_console
 ```
-## Role variables you should care about
+### Role variables you should care about
 
  <table>
   <tr>
