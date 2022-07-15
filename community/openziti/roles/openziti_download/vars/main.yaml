@@ -1,0 +1,12 @@
+---
+
+openziti_core_version: latest
+openziti_edge_tunnel_version: latest
+openziti_console_version: master  # Branch name
+
+openziti_remote_path: /opt/openziti
+openziti_cache_downloads_dir: /tmp/openziti_downloads
+openziti_cache_releases_dir: /tmp/openziti_releases
+openziti_controller_dir: "{{ openziti_cache_releases_dir }}/remote_install"
+
+openziti_cache_localhost: true
