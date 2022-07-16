@@ -10,3 +10,5 @@ openziti_cache_releases_dir: /tmp/openziti_releases
 openziti_controller_dir: "{{ openziti_cache_releases_dir }}/remote_install"
 
 openziti_cache_localhost: true
+
+localhost_become_pass: "{{ omit }}"

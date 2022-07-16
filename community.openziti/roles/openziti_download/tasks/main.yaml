@@ -23,3 +23,4 @@
 
 - name: Remote Hosts | Push from cache server
   include_tasks: push_to_remote.yaml
+  when: inventory_hostname != 'cache_server'

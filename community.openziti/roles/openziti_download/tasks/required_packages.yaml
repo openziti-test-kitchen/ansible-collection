@@ -14,6 +14,28 @@
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
   become: true
+  run_once: true
+  vars:
+    ansible_become_pass: "{% if openziti_cache_localhost %}\
+      {{ localhost_become_pass }}\
+      {% else %}\
+      {{ hostvars['cache_server'].ansible_become_pass  }}\
+      {% endif %}"
+
+- name: Make sure zip is installed on cache server
+  ansible.builtin.package:
+    name: zip
+    state: present
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  become: true
+  run_once: true
+  vars:
+    ansible_become_pass: "{% if openziti_cache_localhost %}\
+      {{ localhost_become_pass }}\
+      {% else %}\
+      {{ hostvars['cache_server'].ansible_become_pass  }}\
+      {% endif %}"
 
 - name: Make sure git is installed on cache server
   ansible.builtin.package:
@@ -22,3 +44,10 @@
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
   become: true
+  run_once: true
+  vars:
+    ansible_become_pass: "{% if openziti_cache_localhost %}\
+      {{ localhost_become_pass }}\
+      {% else %}\
+      {{ hostvars['cache_server'].ansible_become_pass }}\
+      {% endif %}"

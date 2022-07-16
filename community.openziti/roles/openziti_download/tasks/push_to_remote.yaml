@@ -31,5 +31,6 @@
       .{{ openziti_console.archive_extension }}"
     dest: "{{ openziti_console.remote_server_path }}"
     mode: "0744"
+    remote_src: false
   when: "'ziti-console' in openziti_components"
   become: true

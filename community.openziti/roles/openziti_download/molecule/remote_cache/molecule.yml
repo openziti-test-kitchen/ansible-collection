@@ -1,0 +1,52 @@
+---
+
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: ubuntu_amd64
+    image: docker.io/amd64/ubuntu
+    pre_build_image: false
+
+  - name: oracle_amd64
+    image: docker.io/amd64/oraclelinux:8
+    pre_build_image: false
+
+  - name: cache_server
+    image: docker.io/ubuntu
+    pre_build_image: false
+
+provisioner:
+  name: ansible
+  inventory:
+    host_vars:
+      ubuntu_amd64:
+        ansible_user: ansible
+        ansible_become_pass: test
+        openziti_components:
+          - ziti-controller
+          - ziti-router
+          - ziti-tunnel
+          - ziti
+          - ziti-console
+          - ziti-edge-tunnel
+      oracle_amd64:
+        ansible_user: ansible
+        ansible_become_pass: test
+        openziti_components:
+          - ziti-controller
+          - ziti-router
+          - ziti-tunnel
+          - ziti
+          - ziti-console
+          - ziti-edge-tunnel
+      cache_server:
+        ansible_user: ansible
+        ansible_become_pass: test
+verifier:
+  name: ansible
+lint: |
+  set -e
+  yamllint .
+  ansible-lint .

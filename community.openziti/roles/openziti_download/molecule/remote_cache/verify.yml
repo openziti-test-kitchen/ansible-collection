@@ -5,7 +5,6 @@
   vars_files:
     - ../../defaults/main.yaml
     - ../../vars/main.yaml
-
   tasks:
     - name: Select binaries and remote_server_path \
         from openziti components variable

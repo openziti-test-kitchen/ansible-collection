@@ -24,4 +24,4 @@ RUN if [ $(command -v apt-get) ]; then apt-get update && apt-get install -y pyth
 ENV ANSIBLE_USER=ansible
 ENV ANSIBLE_USER_PW=test
 RUN useradd -m -d "/home/{ANSIBLE_USER}" -s /bin/bash -p "$(openssl passwd -1 ${ANSIBLE_USER_PW})" ${ANSIBLE_USER}
-RUN echo "${ANSIBLE_USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+RUN echo "${ANSIBLE_USER} ALL=(ALL:ALL) ALL" >> /etc/sudoers

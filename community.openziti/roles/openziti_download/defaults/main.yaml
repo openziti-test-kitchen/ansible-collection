@@ -17,7 +17,7 @@ openziti_cache_host: "\
   {% if openziti_cache_localhost %}\
   localhost\
   {% else %}\
-  {{ groups['cache_server'][0] }}\
+  cache_server\
   {% endif %}"
 
 openziti_os_architecture_mapping:

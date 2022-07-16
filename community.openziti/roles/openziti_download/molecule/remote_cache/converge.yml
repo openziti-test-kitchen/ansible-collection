@@ -6,5 +6,4 @@
     - ansible.builtin.include_role:
         name: openziti_download
       vars:
-        openziti_cache_localhost: true
-        localhost_become_pass: test
+        openziti_cache_localhost: false

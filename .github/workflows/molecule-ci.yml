@@ -45,4 +45,4 @@ jobs:
 
       - name: Run molecule tests
         working-directory: "${{ github.repository }}/${{ matrix.working-dir }}"
-        run: molecule test
+        run: molecule test --all

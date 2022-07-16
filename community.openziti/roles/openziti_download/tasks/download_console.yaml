@@ -37,7 +37,7 @@
   delegate_facts: false
   run_once: true
 
-- name: Copy OpenZiti Console to ansible controller
+- name: Copy OpenZiti Console to ansible controller / localhost cache
   ansible.builtin.copy:
     src: "{{ openziti_component.cache_server_path }}/\
       {{ openziti_component.archive_file_name }}\
@@ -46,10 +46,24 @@
       {{ openziti_component.archive_file_name }}\
       .{{ openziti_component.archive_extension }}"
     mode: "0700"
-    remote_src: "{{ not openziti_cache_localhost }}"
+    remote_src: false
   delegate_to: "{{ openziti_cache_host }}"
   delegate_facts: false
   run_once: true
+  when: openziti_cache_localhost
+
+- name: Copy OpenZiti Console to ansible controller / remote cache
+  ansible.builtin.fetch:
+    src: "{{ openziti_component.cache_server_path }}/\
+      {{ openziti_component.archive_file_name }}\
+      .{{ openziti_component.archive_extension }}"
+    dest: "{{ openziti_controller_dir }}/"
+    mode: "0700"
+    flat: true
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+  when: not openziti_cache_localhost
 
 - name: Add metadata
   ansible.builtin.lineinfile:
