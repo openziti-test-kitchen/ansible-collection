@@ -1,5 +1,13 @@
 ---
 
 - hosts: '{{ target | default("all") }}'
-  roles:
-    - openziti_download
+
+  tasks:
+    - ansible.builtin.include_role:
+        name: openziti_download
+      vars:
+        openziti_cache_localhost: true
+        # if openziti_cache_localhost = true
+        localhost_become_pass: "{{ my_localhost_sudo_pass_from_secrets }}"
+        # if openziti_cache_localhost = false
+        # use ansible_become_pass host var on hostname cache_server
