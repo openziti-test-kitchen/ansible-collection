@@ -86,5 +86,10 @@ all:
     <td>"{{ openziti_cache_releases_dir }}/remote_install"</td>
     <td>Directory where to store ansible components on ansible controller before pushing to remote</td>
   </tr>
+  <tr>
+    <td>openziti_cache_localhost</td>
+    <td>true</td>
+    <td>Whether or not to use your localhost (ansible controller) as the cache server</td>
+  </tr>
 </table> 
 
