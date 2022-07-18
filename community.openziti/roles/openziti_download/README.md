@@ -78,7 +78,7 @@ all:
   </tr>
   <tr>
     <td>openziti_cache_releases_dir</td>
-    <td>/tmp/openziti_releases</td>5 Allee Saint Exupery 92390 Villeneuve La Garenne
+    <td>/tmp/openziti_releases</td>
     <td>Directory where to store OpenZiti components on cache server</td>
   </tr>
   <tr>
