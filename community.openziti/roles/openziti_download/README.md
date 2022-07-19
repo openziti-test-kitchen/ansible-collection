@@ -11,7 +11,7 @@ The role is idempotent, so it can be easily used with AWX.
 ## Usage
 
 ### Sudo Password
-Some tasks needs to be executed with sudo privileges, when using openziti_download role, make sure you have a safe way of storing your sudo passwords.
+Some tasks needs to be executed with sudo privileges when using openziti_download role, make sure you have a safe way of storing your sudo passwords.
 For example, you could use `ansible-vault` and update your hosts file with the key-value `ansible_become_pass="{{ my_host_become_pass }}"`.
 
 When using your localhost as the `cache-server` (i.e `openziti_cache_localhost` = `true`), you need sudo privileges to make sure that some packages are installed on your localhost (ref. [required_packages.yaml](/community.openziti/roles/openziti_download/tasks/required_packages.yaml)).
@@ -20,7 +20,7 @@ Either specify your localhost sudo password with `-K` or `--ask-become-pass` opt
 When using a remote host as the `cache-server` (i.e `openziti_cache_localhost` = `false`), you should provide the sudo password in host variables.
 
 ### Avoid sudo on cache_server/localhost
-If you want to avoid prividing become password for your cache_server or localhost, just make sur you've tar, zip and git packages installed and skip the tag `cache_server_packages` by running the playbook with `--skip-tags cache_server_packages`.
+If you want to avoid prividing become password for your cache_server or localhost, just make sure you've tar, zip and git packages installed and skip the tag `cache_server_packages` by running the playbook with `--skip-tags cache_server_packages`.
 
 ### Example hosts
 ```
