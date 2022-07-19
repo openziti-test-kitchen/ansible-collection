@@ -14,6 +14,9 @@ Either specify your localhost sudo password with `-K` or `--ask-become-pass` opt
 
 When using a remote host as the `cache-server` (i.e `openziti_cache_localhost` = `false`), you should provide the sudo password in host variables.
 
+### Avoid sudo on cache_server/localhost
+If you want to avoid prividing become password for your cache_server or localhost, just make sur you've tar, zip and git packages installed and skip the tag `cache_server_packages` by running the playbook with `--skip-tags cache_server_packages`.
+
 ### Hosts file : 
 
 ### Localhost cache

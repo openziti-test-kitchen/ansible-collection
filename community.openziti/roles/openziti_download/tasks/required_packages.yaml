@@ -21,6 +21,8 @@
       {% else %}\
       {{ hostvars['cache_server'].ansible_become_pass  }}\
       {% endif %}"
+  tags:
+    - cache_server_packages
 
 - name: Make sure zip is installed on cache server
   ansible.builtin.package:
@@ -36,6 +38,8 @@
       {% else %}\
       {{ hostvars['cache_server'].ansible_become_pass  }}\
       {% endif %}"
+  tags:
+    - cache_server_packages
 
 - name: Make sure git is installed on cache server
   ansible.builtin.package:
@@ -51,3 +55,5 @@
       {% else %}\
       {{ hostvars['cache_server'].ansible_become_pass }}\
       {% endif %}"
+  tags:
+    - cache_server_packages
