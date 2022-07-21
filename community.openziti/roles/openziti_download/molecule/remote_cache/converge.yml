@@ -1,0 +1,9 @@
+---
+
+- hosts: '{{ target | default("all") }}'
+
+  tasks:
+    - ansible.builtin.include_role:
+        name: openziti_download
+      vars:
+        openziti_cache_localhost: false

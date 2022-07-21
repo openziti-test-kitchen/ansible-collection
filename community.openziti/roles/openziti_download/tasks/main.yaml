@@ -1,0 +1,26 @@
+---
+
+- name: Required Packages | Install
+  include_tasks: required_packages.yaml
+
+- name: Prepare Download | Create directories
+  include_tasks: prepare_download.yaml
+
+- name: Cache Server | Download zac
+  vars:
+    openziti_component: "{{ openziti.console }}"
+  include_tasks: download_console.yaml
+
+- name: Cache Server | Download OpenZiti Core
+  vars:
+    openziti_component: "{{ openziti.core }}"
+  include_tasks: download_binaries.yaml
+
+- name: Cache Server | Download OpenZiti Edge Tunnel
+  vars:
+    openziti_component: "{{ openziti.edge_tunnel }}"
+  include_tasks: download_binaries.yaml
+
+- name: Remote Hosts | Push from cache server
+  include_tasks: push_to_remote.yaml
+  when: inventory_hostname != 'cache_server'

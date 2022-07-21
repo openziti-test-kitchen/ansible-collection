@@ -1,0 +1,22 @@
+---
+
+- name: Create downloads and release directory on cache server
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "755"
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+  loop:
+    - "{{ openziti_cache_downloads_dir }}"
+    - "{{ openziti_cache_releases_dir }}"
+
+- name: Create remote_install directory on ansible controller
+  ansible.builtin.file:
+    path: "{{ openziti_controller_dir }}"
+    state: directory
+    mode: "755"
+  delegate_to: "localhost"
+  delegate_facts: false
+  run_once: true

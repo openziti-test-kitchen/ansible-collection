@@ -1,0 +1,91 @@
+---
+
+- name: Get OpenZiti core version if latest is provided
+  ansible.builtin.uri:
+    url: "{{ openziti_component.metadata_api_url }}"
+    body_format: json
+  register: api_response_payload
+  when: openziti_component.version == 'latest'
+
+- name: Set OpenZiti core binaries binaries version if latest is provided
+  vars:
+    component_version: "{{ api_response_payload['json']['tag_name'] | \
+      replace('v', '') }}"
+  ansible.builtin.set_fact: "{{ openziti_component.version_name }}=\
+    {{ component_version }}"
+  when: openziti_component.version == "latest"
+
+- name: Create binaries directory on cache server
+  ansible.builtin.file:
+    path: "{{ openziti_component.cache_server_path }}"
+    state: directory
+    mode: "0755"
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+
+- name: Download OpenZiti binaries on cache server
+  ansible.builtin.get_url:
+    url: "{{ openziti_component.download_url }}"
+    dest: "{{ openziti_cache_downloads_dir }}"
+    mode: "0700"
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+
+- name: Unarchive OpenZiti binaries on cache server
+  ansible.builtin.unarchive:
+    src: "{{ openziti_cache_downloads_dir }}/\
+      {{ openziti_component.archive_file_name }}\
+      .{{ openziti_component.archive_extension }}"
+    dest: "{{ openziti_component.cache_server_path }}"
+    mode: "0744"
+    remote_src: "{{ not openziti_cache_localhost }}"
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+
+- name: Copy binaries from cache server to ansible controller / localhost cache
+  ansible.builtin.copy:
+    src: "{{ openziti_component.cache_server_path }}/{{ item.value }}"
+    dest: "{{ openziti_controller_dir }}/{{ item.key }}"
+    mode: "0644"
+    remote_src: false
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+  with_items: "{{ openziti_component.binaries | dict2items }}"
+  when: openziti_cache_localhost
+
+- name: Copy binaries from cache server to ansible controller / remote cache
+  ansible.builtin.fetch:
+    src: "{{ openziti_component.cache_server_path }}/{{ item.value }}"
+    dest: "{{ openziti_controller_dir }}/{{ item.key }}"
+    mode: "0644"
+    flat: true
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+  with_items: "{{ openziti_component.binaries | dict2items }}"
+  when: not openziti_cache_localhost
+
+- name: Add binary metadata
+  ansible.builtin.lineinfile:
+    path: "{{ openziti_controller_dir }}/{{ openziti_metadata_file_name }}"
+    line: "{{ openziti_component.name }}={{ openziti_component.version }}"
+    regexp: "^{{ openziti_component.name }}\
+      =(?!{{ openziti_component.version }})$"
+    mode: "0644"
+    create: true
+  delegate_to: "localhost"
+  delegate_facts: false
+  run_once: true
+
+- name: Create binaries directory on hosts
+  ansible.builtin.file:
+    path: "{{ openziti_component.remote_server_path }}"
+    state: directory
+    mode: "0755"
+  when: "(openziti_component.binaries.keys() | \
+    intersect(openziti_components)) is iterable"
+  become: true

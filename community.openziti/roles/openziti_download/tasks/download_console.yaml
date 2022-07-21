@@ -1,0 +1,86 @@
+---
+# TODO : Add support for OpenZiti Console specific version usage
+
+# Step Below :
+# ansible.builtin.git module using archive doesn't seem to be idempotent
+# Open issue https://github.com/ansible/ansible/issues/78190
+
+- name: Check if OpenZiti Console archive exists on cache server
+  ansible.builtin.stat:
+    path: "{{ openziti_component.cache_server_path }}/\
+      {{ openziti_component.archive_file_name }}\
+      .{{ openziti_component.archive_extension }}"
+  register: archive_exists
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+
+- name: Clone OpenZiti Console repository on cache server / archive
+  ansible.builtin.git:
+    repo: "{{ openziti_component.download_url }}"
+    dest: "{{ openziti_component.cache_server_path }}"
+    version: "{{ openziti_component.version }}"
+    archive: "{{ openziti_component.cache_server_path }}/\
+      {{ openziti_component.archive_file_name }}\
+      .{{ openziti_component.archive_extension }}"
+  when: not archive_exists.stat.exists
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+
+- name: Clone OpenZiti Console repository on cache server / no archive
+  ansible.builtin.git:
+    repo: "{{ openziti_component.download_url }}"
+    dest: "{{ openziti_component.cache_server_path }}"
+    version: "{{ openziti_component.version }}"
+  when: archive_exists.stat.exists
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+
+- name: Copy OpenZiti Console to ansible controller / localhost cache
+  ansible.builtin.copy:
+    src: "{{ openziti_component.cache_server_path }}/\
+      {{ openziti_component.archive_file_name }}\
+      .{{ openziti_component.archive_extension }}"
+    dest: "{{ openziti_controller_dir }}/\
+      {{ openziti_component.archive_file_name }}\
+      .{{ openziti_component.archive_extension }}"
+    mode: "0700"
+    remote_src: false
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+  when: openziti_cache_localhost
+
+- name: Copy OpenZiti Console to ansible controller / remote cache
+  ansible.builtin.fetch:
+    src: "{{ openziti_component.cache_server_path }}/\
+      {{ openziti_component.archive_file_name }}\
+      .{{ openziti_component.archive_extension }}"
+    dest: "{{ openziti_controller_dir }}/"
+    mode: "0700"
+    flat: true
+  delegate_to: "{{ openziti_cache_host }}"
+  delegate_facts: false
+  run_once: true
+  when: not openziti_cache_localhost
+
+- name: Add metadata
+  ansible.builtin.lineinfile:
+    path: "{{ openziti_controller_dir }}/{{ openziti_metadata_file_name }}"
+    line: "{{ openziti_component.name }}={{ openziti_component.version }}"
+    regexp: "^{{ openziti_component.name }}=\
+      (?!{{ openziti_component.version }})$"
+    mode: "0644"
+    create: true
+  delegate_to: "localhost"
+  delegate_facts: false
+  run_once: true
+
+- name: Create ziti-console directory on ZAC hosts
+  ansible.builtin.file:
+    path: "{{ openziti_component.remote_server_path }}"
+    state: directory
+    mode: "0755"
+  when: "'ziti-console' in openziti_components"
+  become: true

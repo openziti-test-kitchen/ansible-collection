@@ -1,0 +1,26 @@
+---
+
+- name: Verify
+  hosts: all
+  vars_files:
+    - ../../defaults/main.yaml
+    - ../../vars/main.yaml
+
+  tasks:
+    - name: Select binaries and remote_server_path \
+        from openziti components variable
+      vars:
+        host_components: "{{ item.value.binaries | \
+          intersect(openziti_components) }}"
+      ansible.builtin.set_fact:
+        download_components: "{{ download_components | d([]) + \
+          [{\"openziti_component\": host_components, \
+          \"path\": item.value.remote_server_path}] }}"
+      loop: "{{ openziti | dict2items | \
+        selectattr('value.binaries', 'defined') }}"
+
+    - name: Verify that OpenZiti components are present on remote hosts
+      ansible.builtin.stat:
+        path: "{{ item.path }}/{{ item.openziti_component }}"
+      with_items: "{{ download_components }}"
+      become: true
