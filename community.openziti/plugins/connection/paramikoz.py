@@ -8,8 +8,7 @@ from ansible.plugins.connection.paramiko_ssh import \
 DOCUMENTATION = '''
     extends_documentation_fragment:
       - community.openziti.paramiko
-      - community.openziti.ziti_base
-      - community.openziti.ziti_log
+      - community.openziti.paramikoz
     '''
 
 

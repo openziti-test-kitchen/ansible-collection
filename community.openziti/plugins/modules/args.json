@@ -1,7 +1,0 @@
-{
-    "ANSIBLE_MODULE_ARGS": {
-        "token_file": "/home/steven/Downloads/token.jwt",
-        "identity_file": "/home/steven/Downloads/id.json",
-        "backup": false
-    }
-}
