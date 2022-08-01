@@ -40,6 +40,8 @@ options:
         required: false
         type: bool
         default: false
+    replace:
+        description: Re-enroll token, overriding identity file.
     ziti_log_level:
         description: verbosity of ziti library
         required: false
@@ -75,6 +77,7 @@ def run_module():
         token_file=dict(type='path', required=True),
         identity_file=dict(type='path', required=True),
         backup=dict(type='bool', required=False, default=False),
+        replace=dict(type='bool', required=False, default=False),
         ziti_log_level=dict(type='int', required=False, default=0)
     )
 
@@ -97,11 +100,9 @@ def run_module():
     if not os.access(identity_p.parent, os.W_OK):
         module.fail_json(msg=f"{identity_p.parent} is not writable", **result)
 
-    if module.check_file_absent_if_check_mode(identity_p):
-        result['changed'] = True
-        module.exit_json(**result)
-
-    if identity_p.is_file():
+    if identity_p.is_file() and not module.params['replace']:
+        id_dict = json.loads(identity_p.read_bytes())
+        result['identity_info']['ztAPI'] = id_dict['ztAPI']
         module.exit_json(**result)
 
     try:
@@ -117,6 +118,15 @@ def run_module():
             )
     except Exception as err:  # pylint: disable=broad-except
         module.fail_json(msg=f"Could not decode JWT token: {err}", **result)
+
+    # if module.check_mode and file_does_not_exist
+    if module.check_file_absent_if_check_mode(identity_p):
+        result['changed'] = True
+        module.exit_json(**result)
+
+    if module.check_mode and module.params['replace']:
+        result['changed'] = True
+        module.exit_json(**result)
 
     if os.getenv('ZITI_LOG') is None:
         os.environ['ZITI_LOG'] = str(module.params['ziti_log_level'])
