@@ -99,9 +99,15 @@ def run_module():
     if not os.access(identity_p.parent, os.W_OK):
         module.fail_json(msg=f"{identity_p.parent} is not writable", **result)
 
-    if identity_p.is_file() and not module.params['replace']:
+    if identity_p.is_file():
         id_dict = json.loads(identity_p.read_bytes())
         result['identity_info']['ztAPI'] = id_dict['ztAPI']
+
+        if not module.params['replace']:
+            module.exit_json(**result)
+
+    if module.check_mode and module.params['replace']:
+        result['changed'] = True
         module.exit_json(**result)
 
     try:
@@ -120,10 +126,6 @@ def run_module():
 
     # if module.check_mode and file_does_not_exist
     if module.check_file_absent_if_check_mode(identity_p):
-        result['changed'] = True
-        module.exit_json(**result)
-
-    if module.check_mode and module.params['replace']:
         result['changed'] = True
         module.exit_json(**result)
 
