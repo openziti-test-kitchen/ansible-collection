@@ -9,6 +9,7 @@ DOCUMENTATION = '''
     extends_documentation_fragment:
       - community.openziti.paramiko
       - community.openziti.paramikoz
+      - community.openziti.ziti
     '''
 
 

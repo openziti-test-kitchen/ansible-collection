@@ -42,11 +42,9 @@ options:
         default: false
     replace:
         description: Re-enroll token, overriding identity file.
-    ziti_log_level:
-        description: verbosity of ziti library
-        required: false
-        type: int
-        default: 0
+
+extends_documentation_fragment:
+    - community.openziti.ziti
 
 author:
     - Steven A. Broderick Elias(@sabedevops)
@@ -72,6 +70,7 @@ identity_info:
 
 
 def run_module():
+    # pylint: disable=too-many-statements, too-many-branches
     """TODO"""
     module_args = dict(
         token_file=dict(type='path', required=True),
