@@ -1,4 +1,4 @@
-"""TODO"""
+"""ParamikoZ doc_fragment plugin"""
 
 
 class ModuleDocFragment():

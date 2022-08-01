@@ -1,4 +1,4 @@
-"""TODO"""
+"""Paramiko connection documentaiton as doc_fragment"""
 from ansible.plugins.connection.paramiko_ssh import \
     DOCUMENTATION as PARAMIKO_DOCUMENTATION
 

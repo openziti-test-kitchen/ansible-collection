@@ -1,4 +1,4 @@
-"""TODO"""
+"""OpenZiti doc_fragment plugin"""
 
 
 class ModuleDocFragment():

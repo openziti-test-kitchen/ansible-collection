@@ -1,4 +1,4 @@
-"""TODO"""
+"""OpenZiti JWT token enrollment Ansible module."""
 #!/usr/bin/env python
 
 # Copyright: (c) 2022, Steven Broderick <steven.broderick@netfoundry.io>
@@ -11,10 +11,9 @@ from pathlib import Path
 import jwt
 from ansible.module_utils.basic import AnsibleModule
 from openziti import enroll
-# from platformdirs import user_config_dir
 
-# pylint: disable=invalid-name
-__metaclass__ = type
+
+__metaclass__ = type  # pylint: disable=invalid-name
 
 DOCUMENTATION = r'''
 ---
@@ -71,7 +70,7 @@ identity_info:
 
 def run_module():
     # pylint: disable=too-many-statements, too-many-branches
-    """TODO"""
+    """Enrolls JWT token."""
     module_args = dict(
         token_file=dict(type='path', required=True),
         identity_file=dict(type='path', required=True),
@@ -124,7 +123,6 @@ def run_module():
     except Exception as err:  # pylint: disable=broad-except
         module.fail_json(msg=f"Could not decode JWT token: {err}", **result)
 
-    # if module.check_mode and file_does_not_exist
     if module.check_file_absent_if_check_mode(identity_p):
         result['changed'] = True
         module.exit_json(**result)
@@ -167,7 +165,7 @@ def run_module():
 
 
 def main():
-    """TODO"""
+    """Execution wrapper around run_module"""
     run_module()
 
 
