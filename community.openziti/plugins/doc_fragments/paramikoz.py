@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+# Copyright: NetFoundry Inc.
+# Apache License, Version 2 (see http://www.apache.org/licenses/LICENSE-2.0)
 """ParamikoZ doc_fragment plugin"""
 
 

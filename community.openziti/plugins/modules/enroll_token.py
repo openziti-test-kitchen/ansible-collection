@@ -1,17 +1,19 @@
-"""OpenZiti JWT token enrollment Ansible module."""
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-# Copyright: (c) 2022, Steven Broderick <steven.broderick@netfoundry.io>
+# Copyright: NetFoundry Inc.
+# Apache License, Version 2 (see http://www.apache.org/licenses/LICENSE-2.0)
+"""OpenZiti JWT token enrollment Ansible module."""
+
 from __future__ import absolute_import, division, print_function
 
-import os
 import json
+import os
 from pathlib import Path
 
 import jwt
 from ansible.module_utils.basic import AnsibleModule
 from openziti import enroll
-
 
 __metaclass__ = type  # pylint: disable=invalid-name
 
