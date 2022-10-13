@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - id: set-molecule-dirs
-        run: echo "::set-output name=molecule-dirs::$(find * -type d -name molecule | sed s,/*[^/]*$,, | jq -R -s -c 'split("\n")[:-1]')"
+        run: echo "molecule-dirs=$(find * -type d -name molecule | sed s,/*[^/]*$,, | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
   ci:
     needs: [get-molecule-jobs]
