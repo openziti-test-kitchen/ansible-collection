@@ -24,7 +24,7 @@ module: enroll_token
 
 short_description: Enroll ziti JWT token
 
-version_added: "1.0.0"
+version_added: "0.1.0"
 
 description: Enrolls ziti JWT token; generates ziti identity file.
 
