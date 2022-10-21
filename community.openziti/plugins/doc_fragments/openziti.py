@@ -18,7 +18,7 @@ class ModuleDocFragment():
         ini:
           - section: openziti
             key: ziti_log_level
-          - section: anzible_connection
+          - section: openziti_connection
             key: ziti_log_level
         vars:
           - name: ziti_log_level

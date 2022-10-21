@@ -15,7 +15,7 @@ DOCUMENTATION = '''
     extends_documentation_fragment:
       - community.openziti.libssh
       - community.openziti.openziti
-      - community.openziti.anzible
+      - community.openziti.openziti_connection
     '''
 
 

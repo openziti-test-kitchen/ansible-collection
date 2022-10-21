@@ -1,4 +1,4 @@
-# OpenZiti AnZible Collection
+# OpenZiti Ansible Collection
 
 Add to your `requirements.yaml` file:
 

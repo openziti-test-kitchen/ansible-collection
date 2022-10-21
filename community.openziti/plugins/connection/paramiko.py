@@ -14,7 +14,7 @@ DOCUMENTATION = '''
     extends_documentation_fragment:
       - community.openziti.paramiko
       - community.openziti.openziti
-      - community.openziti.anzible
+      - community.openziti.openziti_connection
     '''
 
 
