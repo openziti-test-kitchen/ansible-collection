@@ -6,7 +6,7 @@
 
 
 class ModuleDocFragment():
-    """Paramikoz Documentation"""
+    """OpenZiti Documentation"""
     # pylint: disable=too-few-public-methods
     DOCUMENTATION = '''
     options:
@@ -16,9 +16,9 @@ class ModuleDocFragment():
         env:
           - name: ANSIBLE_ZITI_LOG_LEVEL
         ini:
-          - section: ziti
+          - section: openziti
             key: ziti_log_level
-          - section: paramikoz_connection
+          - section: anzible_connection
             key: ziti_log_level
         vars:
           - name: ziti_log_level

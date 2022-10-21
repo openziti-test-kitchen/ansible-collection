@@ -6,32 +6,32 @@
 
 import os
 
-import openziti
 from ansible.plugins.connection.paramiko_ssh import \
     Connection as ParamikoConnection
+import openziti
 
 DOCUMENTATION = '''
     extends_documentation_fragment:
       - community.openziti.paramiko
-      - community.openziti.paramikoz
-      - community.openziti.ziti
+      - community.openziti.openziti
+      - community.openziti.anzible
     '''
 
 
 class Connection(ParamikoConnection):
-    '''Ziti based connection wrapper for paramiko_ssh'''
+    '''OpenZiti based connection wrapper for paramiko_ssh'''
     # pylint: disable=import-outside-toplevel
 
-    transport = 'paramikoz'
+    transport = 'community.openziti.paramiko'
 
     def _connect(self):
-        '''Wrap connection activation object with ziti'''
+        '''Wrap connection activation object with OpenZiti'''
 
-        self.log_level = self.get_option('ziti_log_level')
+        log_level = self.get_option('ziti_log_level')
         if os.getenv('ZITI_LOG') is None:
-            os.environ['ZITI_LOG'] = str(self.log_level)
-        self.identities = self.get_option('ziti_identities')
-        for identity in self.identities:
+            os.environ['ZITI_LOG'] = str(log_level)
+        identities = self.get_option('ziti_identities')
+        for identity in identities:
             openziti.load(identity)
 
         with openziti.monkeypatch():

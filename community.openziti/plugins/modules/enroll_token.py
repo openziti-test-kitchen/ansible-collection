@@ -10,6 +10,7 @@ from __future__ import absolute_import, division, print_function
 import json
 import os
 from pathlib import Path
+from typing import Any, Dict
 
 import jwt
 from ansible.module_utils.basic import AnsibleModule
@@ -45,7 +46,7 @@ options:
         description: Re-enroll token, overriding identity file.
 
 extends_documentation_fragment:
-    - community.openziti.ziti
+    - community.openziti.openziti
 
 author:
     - Steven A. Broderick Elias(@sabedevops)
@@ -70,7 +71,7 @@ identity_info:
 '''
 
 
-def run_module():
+def run_module() -> None:
     # pylint: disable=too-many-statements, too-many-branches
     """Enrolls JWT token."""
     module_args = dict(
@@ -81,7 +82,7 @@ def run_module():
         ziti_log_level=dict(type='int', required=False, default=0)
     )
 
-    result = dict(
+    result: Dict[str, Any] = dict(
         changed=False,
         token_payload={},
         identity_info={}
@@ -122,7 +123,7 @@ def run_module():
                 algorithsms=[jwt.get_unverified_header(token)['alg']],
                 options={"verify_signature": False}
             )
-    except Exception as err:  # pylint: disable=broad-except
+    except jwt.exceptions.PyJWTError as err:
         module.fail_json(msg=f"Could not decode JWT token: {err}", **result)
 
     if module.check_file_absent_if_check_mode(identity_p):
@@ -166,7 +167,7 @@ def run_module():
     module.exit_json(**result)
 
 
-def main():
+def main() -> None:
     """Execution wrapper around run_module"""
     run_module()
 

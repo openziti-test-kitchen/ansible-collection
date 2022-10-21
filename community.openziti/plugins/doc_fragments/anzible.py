@@ -2,11 +2,11 @@
 
 # Copyright: NetFoundry Inc.
 # Apache License, Version 2 (see http://www.apache.org/licenses/LICENSE-2.0)
-"""ParamikoZ doc_fragment plugin"""
+"""AnZible doc_fragment plugin"""
 
 
 class ModuleDocFragment():
-    """Paramikoz Documentation"""
+    """AnZible Documentation"""
     # pylint: disable=too-few-public-methods
     DOCUMENTATION = '''
     options:
@@ -16,7 +16,7 @@ class ModuleDocFragment():
         env:
           - name: ANSIBLE_ZITI_IDENTITIES
         ini:
-          - section: paramikoz_connection
+          - section: anzible_connection
             key: ziti_identities
         vars:
           - name: ziti_identities
