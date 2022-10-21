@@ -29,8 +29,12 @@ You can read the docs using `ansible-doc`:
 # Example
 ansible-doc -t connection community.openziti.paramiko
 ansible-doc -t connection community.openziti.libssh
-ansible-doc -t module  community.openziti.enroll_token
+ansible-doc -t module community.openziti.enroll_token
 ```
+
+## Note
+
+The `community.openziti.libssh` connection plugin is experimental. Prefer the paramiko connection plugin instead.
 
 ## Contributing
 
