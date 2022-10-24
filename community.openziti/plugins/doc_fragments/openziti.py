@@ -6,19 +6,22 @@
 
 
 class ModuleDocFragment():
-    """Paramikoz Documentation"""
+    """OpenZiti Documentation"""
     # pylint: disable=too-few-public-methods
     DOCUMENTATION = '''
     options:
       ziti_log_level:
-        description: verbosity of ziti library
-        default: 0
+        description: |
+            verbosity of ziti library.
+            If unset, connection plugins default to the
+            value of ansible_verbosity
+        default: null
         env:
           - name: ANSIBLE_ZITI_LOG_LEVEL
         ini:
-          - section: ziti
+          - section: openziti
             key: ziti_log_level
-          - section: paramikoz_connection
+          - section: openziti_connection
             key: ziti_log_level
         vars:
           - name: ziti_log_level
