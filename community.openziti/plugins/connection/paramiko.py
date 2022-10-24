@@ -50,14 +50,14 @@ class Connection(ParamikoConnection):
                   host=self.get_option('remote_addr'))
 
     @property
-    def identities(self) -> List[str]:
+    def ziti_identities(self) -> List[str]:
         "Returns loaded identities"
         return self._ziti_identities
 
-    @identities.setter
-    def identities(self, identity_list: List[str]) -> None:
+    @ziti_identities.setter
+    def ziti_identities(self, identities: List[str]) -> None:
         "Loads OpenZiti identities"
-        for identity in identity_list:
+        for identity in identities:
             openziti.load(identity)
             self._ziti_identities.append(identity)
             display.vvv(f"OPENZITI LOAD IDENTITY: {identity}",
@@ -69,8 +69,8 @@ class Connection(ParamikoConnection):
         if self.ziti_log_level < 0:
             self.ziti_log_level = self.get_option('ziti_log_level')
 
-        if not self.identities:
-            self.identities = self.get_option('ziti_identities')
+        if not self.ziti_identities:
+            self.ziti_identities = self.get_option('ziti_identities')
 
         with openziti.monkeypatch():
             display.vvv("OPENZITI TUNNELED CONNECTION",
