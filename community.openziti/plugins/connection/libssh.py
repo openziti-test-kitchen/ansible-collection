@@ -5,9 +5,13 @@
 """OpenZiti pylibssh connection plugin wrapper"""
 import os
 import socket
+from typing import List
 
 import ansible_collections.ansible.netcommon.plugins.connection.libssh as PyLibSSH
 import openziti
+from ansible.utils.display import Display
+
+display = Display()
 
 # pylint: disable=too-few-public-methods
 
@@ -21,14 +25,17 @@ DOCUMENTATION = '''
 
 class ZitiSession(PyLibSSH.Session):
     """PyLibSSH Session Wrapper"""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         self.sock = openziti.socket(type=socket.SOCK_STREAM)
         super().__init__(*args, **kwargs)
 
-    def connect(self, **kwargs):
+    def connect(self, **kwargs) -> None:
         """PyLibSSH.Session.connect wrapper"""
         self.sock.connect((kwargs['host'], kwargs['port']))
-        self.set_ssh_options('fd', self.sock.fileno())
+        __fd = self.sock.fileno()
+        self.set_ssh_options('fd', __fd)
+        display.vvv(f"OPENZITI TUNNELED CONNECTION via ZitiSocket fd={__fd}",
+                    host=kwargs['host'])
         super().connect(**kwargs)
 
 
@@ -40,14 +47,44 @@ class Connection(PyLibSSH.Connection):
 
     transport = 'community.openziti.libssh'
 
-    def _connect(self):
-        '''Wrap connection activation object with OpenZiti'''
+    def __init__(self, *args, **kwargs) -> None:
+        self._ziti_identities: List[str] = []
+        self._ziti_log_level = int(os.getenv('ZITI_LOG', '-1'))
+        super().__init__(*args, **kwargs)
 
-        log_level = self.get_option('ziti_log_level')
-        if os.getenv('ZITI_LOG') is None:
-            os.environ['ZITI_LOG'] = str(log_level)
-        identities = self.get_option('ziti_identities')
-        for identity in identities:
+    @property
+    def ziti_log_level(self) -> int:
+        "Returns ziti log level"
+        return self._ziti_log_level
+
+    @ziti_log_level.setter
+    def ziti_log_level(self, log_level: int) -> None:
+        if log_level is not None:
+            verbosity = log_level
+        else:
+            verbosity = display.verbosity
+        self._ziti_log_level = verbosity
+        os.environ['ZITI_LOG'] = str(verbosity)
+
+    @property
+    def identities(self) -> List[str]:
+        "Returns loaded identities"
+        return self._ziti_identities
+
+    @identities.setter
+    def identities(self, identity_list: List[str]) -> None:
+        "Loads OpenZiti identities"
+        for identity in identity_list:
             openziti.load(identity)
+            self._ziti_identities.append(identity)
+            display.vvv(f"OPENZITI LOAD IDENTITY: {identity}",
+                        host=self.get_option('remote_addr'))
 
+    def _connect(self) -> None:
+        '''Wrap connection activation object with OpenZiti'''
+        if self.ziti_log_level < 0:
+            self.ziti_log_level = self.get_option('ziti_log_level')
+
+        if not self.identities:
+            self.identities = self.get_option('ziti_identities')
         super()._connect()

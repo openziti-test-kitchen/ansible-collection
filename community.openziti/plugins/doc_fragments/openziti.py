@@ -12,7 +12,7 @@ class ModuleDocFragment():
     options:
       ziti_log_level:
         description: verbosity of ziti library
-        default: 0
+        default: null
         env:
           - name: ANSIBLE_ZITI_LOG_LEVEL
         ini:
