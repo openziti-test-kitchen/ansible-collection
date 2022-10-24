@@ -85,6 +85,9 @@ class Connection(PyLibSSH.Connection):
         if self.ziti_log_level < 0:
             self.ziti_log_level = self.get_option('ziti_log_level')
 
+        display.v(f"OPENZITI LOG LEVEL: {self.ziti_log_level}",
+                  host=self.get_option('remote_addr'))
+
         if not self.identities:
             self.identities = self.get_option('ziti_identities')
         super()._connect()

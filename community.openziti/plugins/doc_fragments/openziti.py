@@ -11,7 +11,10 @@ class ModuleDocFragment():
     DOCUMENTATION = '''
     options:
       ziti_log_level:
-        description: verbosity of ziti library
+        description: |
+            verbosity of ziti library.
+            If unset, connection plugins default to the
+            value of ansible_verbosity
         default: null
         env:
           - name: ANSIBLE_ZITI_LOG_LEVEL
