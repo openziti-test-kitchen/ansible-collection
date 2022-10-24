@@ -23,7 +23,6 @@ DOCUMENTATION = '''
 
 class Connection(ParamikoConnection, ConnectionMixin):
     '''OpenZiti based connection wrapper for paramiko_ssh'''
-    # pylint: disable=import-outside-toplevel
 
     transport = 'community.openziti.paramiko'
 
