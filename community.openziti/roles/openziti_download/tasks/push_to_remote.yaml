@@ -19,7 +19,7 @@
     dest: "{{ item.path }}/"
     mode: "0744"
   with_items: "{{ download_components }}"
-  when: item != ''
+  when: item is defined and item
   become: true
 
 - name: Unarchive OpenZiti console on ZAC hosts

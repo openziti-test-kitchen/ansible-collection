@@ -5,7 +5,7 @@
 """OpenZiti Ansible Collection Mixins"""
 import os
 from abc import ABCMeta, abstractmethod
-from typing import List
+from typing import Dict, List, Optional
 
 import openziti
 from ansible.plugins.connection import ConnectionBase
@@ -20,6 +20,7 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
     def __init__(self, *args, **kwargs) -> None:
         self._ziti_identities: List[str] = []
         self._ziti_log_level = int(os.getenv('ZITI_LOG', '-1'))
+        self._ziti_dial_service_cfg: Optional[Dict[str, str]] = None
         super().__init__(*args, **kwargs)
 
     @property
@@ -51,6 +52,19 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
             self._ziti_identities.append(identity)
             display.vvv(f"OPENZITI LOAD IDENTITY: {identity}",
                         host=self.get_option('remote_addr'))
+
+    @property
+    def ziti_dial_service_cfg(self) -> Optional[Dict[str, str]]:
+        "Returns dial service configuration"
+        return self._ziti_dial_service_cfg
+
+    @ziti_dial_service_cfg.setter
+    def ziti_dial_service_cfg(self, cfg: Dict[str, str]) -> None:
+        "Loads dial service configuration"
+        self._ziti_identities.append(cfg['ziti_connection_identity_file'])
+        self._ziti_dial_service_cfg = cfg
+        display.vvv(f"OPENZITI SET DIAL SERVICE CONFIGURATION: {cfg}",
+                    host=self.get_option('remote_addr'))
 
     @abstractmethod
     def _connect(self) -> None:

@@ -1,2 +1,3 @@
 .editorconfig
-
+__pycache__
+tags

@@ -1,4 +1,6 @@
 ansible-pylibssh
+jsonschema
 openziti
+openziti_edge[client]
 paramiko
 pyjwt
