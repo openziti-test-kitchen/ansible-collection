@@ -7,16 +7,16 @@ import os
 import tempfile
 from typing import Any, Dict, Union
 
-import openziti_edge
+import openziti_edge_client
 from ansible.errors import AnsibleRuntimeError
 from ansible.module_utils.common.text.converters import to_bytes
 from ansible.plugins.inventory import BaseInventoryPlugin
 from ansible.utils.display import Display
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
-from openziti_edge.client import authentication_api, service_api
-from openziti_edge.model.authenticate import Authenticate
-from openziti_edge.model.config_types import ConfigTypes
+from openziti_edge_client.api import authentication_api, service_api
+from openziti_edge_client.model.authenticate import Authenticate
+from openziti_edge_client.model.config_types import ConfigTypes
 
 DOCUMENTATION = '''
     name: openziti_identity_inventory
@@ -102,7 +102,7 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
     key_fp = tempfile.NamedTemporaryFile(buffering=0)
     key_fp.write(id_json['id']['key'].encode('UTF-8'))
 
-    configuration = openziti_edge.Configuration(
+    configuration = openziti_edge_client.Configuration(
         host=id_json['ztAPI'] + "/edge/client/v1",
         ssl_ca_cert=ca_fp.name
     )
@@ -110,7 +110,7 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
     configuration.cert_file = cert_fp.name
     configuration.key_file = key_fp.name
 
-    with openziti_edge.ApiClient(configuration) as api_client:
+    with openziti_edge_client.ApiClient(configuration) as api_client:
         api_auth = authentication_api.AuthenticationApi(api_client)
         method = "cert"  # pylint: disable=invalid-name
 
@@ -119,7 +119,7 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
 
         try:
             session = api_auth.authenticate(method, auth=auth)
-        except openziti_edge.OpenApiException as err:
+        except openziti_edge_client.OpenApiException as err:
             raise AnsibleRuntimeError(
                 "Error calling OpenZiti.AuthenticationApi->authenticate."
             ) from err
@@ -130,10 +130,10 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
         try:
             services = api_service.list_services()
         #        filter='tags.ansible_inventory="yes"')
-        except openziti_edge.exceptions.ApiException as err:
+        except openziti_edge_client.exceptions.ApiException as err:
             raise AnsibleRuntimeError(
                 "Error calling OpenZiti.ServiceApi->list_services.") from err
-        except openziti_edge.exceptions.ApiValueError as err:
+        except openziti_edge_client.exceptions.ApiValueError as err:
             raise AnsibleRuntimeError(
                 "Error calling OpenZiti.ServiceApi->list_services. "
                 "Please check service has at least 1 service config.") from err
@@ -163,7 +163,7 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
 
             try:
                 terminators = api_service.list_service_terminators(service.id)
-            except openziti_edge.ApiException as err:
+            except openziti_edge_client.ApiException as err:
                 raise AnsibleRuntimeError(
                     "Error calling"
                     "OpenZiti.ServiceApi->list_service_terminators."
