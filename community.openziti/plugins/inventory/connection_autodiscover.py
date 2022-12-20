@@ -82,8 +82,6 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
 
     :param identity_file: path to an identity.json file
     :returns: dictionary of per identity ansible connection variables
-
-    .. TODO: Restrict to dial permissions
     """
     # pylint: disable=too-many-statements, too-many-locals
 
@@ -147,7 +145,7 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
 
         for service in services.data.value:
             try:
-                config = service['config']
+                config = service.config
             except KeyError as err:
                 raise AnsibleRuntimeError(
                         "OpenZiti service result has no config key.") from err
@@ -161,6 +159,19 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
                     )
                 continue
 
+            dial_permission_found = False
+
+            for permission in service.permissions.value:
+                if 'Dial' == permission.value:
+                    dial_permission_found = True
+
+            if not dial_permission_found:
+                display.vvv(
+                        f"OPENZITI Skipping service: {service.name} => "
+                        "Identity does not have permission to Dial service."
+                    )
+                continue
+
             try:
                 terminators = api_service.list_service_terminators(service.id)
             except openziti_edge_client.ApiException as err:
@@ -170,7 +181,7 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
                 ) from err
 
             for terminator in terminators.data.value:
-                identity = terminator['identity']
+                identity = terminator.identity
                 if ansible_data.get('identity') is not None:
                     continue
                 if not identity:
@@ -179,7 +190,7 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
 
                 zitivars: Dict[str, str] = {}
                 zitivars['ziti_connection_identity_file'] = identity_file
-                zitivars['ziti_connection_service'] = service['name']
+                zitivars['ziti_connection_service'] = service.name
                 zitivars['ziti_connection_service_terminator'] = identity
 
                 variables: Dict[str, Union[Dict, Union[str, int]]] = {
