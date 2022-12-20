@@ -198,11 +198,6 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
                     }
                 variables['ansible_connection'] = "community.openziti." +\
                     config_dict['connection_plugin']
-                # We lie to Ansible, in order for enable bind_ctx
-                # hostname resolution.
-                # variables['ansible_host'] = "autodiscover.ansible.ziti"
-                variables['ansible_host'] = "0.0.0.1"
-                variables['ansible_port'] = 2222
                 ansible_data[identity] = variables
         return ansible_data
 

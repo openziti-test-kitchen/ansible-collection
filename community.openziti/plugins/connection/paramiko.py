@@ -88,7 +88,10 @@ class Connection(ParamikoConnection, ConnectionMixin):
                     'ziti_connection_dial_service')
 
         if self.ziti_dial_service_cfg is not None:
+            # We lie to Ansible, because we're gonna dial
+            # by addressable terminator
             self.set_option('host_key_checking', False)
+            self.set_option('remote_addr', '127.0.0.1')
 
         if not self.ziti_identities:
             self.ziti_identities = self.get_option('ziti_identities')
