@@ -1,6 +1,6 @@
 ansible
 ansible-pylibssh
-git+https://github.com/openziti-test-kitchen/openziti-edge-client-python.git@d432db0#egg=openziti-edge-client
+git+https://github.com/openziti-test-kitchen/openziti-edge-client-python.git@afc6db3#egg=openziti-edge-client
 jsonschema
 openziti
 paramiko
