@@ -78,21 +78,7 @@ class Connection(PyLibSSH.Connection, ConnectionMixin):
 
     def _connect(self) -> None:
         '''Wrap connection activation object with OpenZiti'''
-        if self.ziti_log_level < 0:
-            self.ziti_log_level = self.get_option('ziti_log_level')
-
-        if not self.ziti_identities:
-            self.ziti_dial_service_cfg = self.get_option(
-                    'ziti_connection_dial_service')
-
-        if self.ziti_dial_service_cfg is not None:
-            # We lie to Ansible, because we're gonna dial
-            # by addressable terminator
-            self.set_option('host_key_checking', False)
-            self.set_option('remote_addr', '127.0.0.1')
-
-        if not self.ziti_identities:
-            self.ziti_identities = self.get_option('ziti_identities')
+        self.init_options()
 
         PyLibSSH.Session = get_ziti_ssh_session_with_context(
                 self.ziti_dial_service_cfg)

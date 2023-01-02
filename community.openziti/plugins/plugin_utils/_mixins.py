@@ -50,8 +50,8 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
         for identity in identities:
             openziti.load(identity)
             self._ziti_identities.append(identity)
-            display.vvv(f"OPENZITI LOAD IDENTITY: {identity}",
-                        host=self.get_option('remote_addr'))
+            display.debug(f"OPENZITI LOAD IDENTITY: {identity}",
+                          host=self.get_option('remote_addr'))
 
     @property
     def ziti_dial_service_cfg(self) -> Optional[Dict[str, str]]:
@@ -59,12 +59,32 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
         return self._ziti_dial_service_cfg
 
     @ziti_dial_service_cfg.setter
-    def ziti_dial_service_cfg(self, cfg: Dict[str, str]) -> None:
+    def ziti_dial_service_cfg(self, cfg: Optional[Dict[str, str]]) -> None:
         "Loads dial service configuration"
-        self._ziti_identities.append(cfg['ziti_connection_identity_file'])
-        self._ziti_dial_service_cfg = cfg
-        display.vvv(f"OPENZITI SET DIAL SERVICE CONFIGURATION: {cfg}",
-                    host=self.get_option('remote_addr'))
+        if cfg is not None:
+            self._ziti_identities.append(cfg['ziti_connection_identity_file'])
+            self._ziti_dial_service_cfg = cfg
+            display.debug(f"OPENZITI SET DIAL SERVICE CONFIGURATION: {cfg}",
+                          host=self.get_option('remote_addr'))
+
+    def init_options(self) -> None:
+        """Helper to initialize _connect() method options"""
+        if self.ziti_log_level < 0:
+            self.ziti_log_level = self.get_option('ziti_log_level')
+
+        if not self.ziti_identities:
+            self.ziti_dial_service_cfg = self.get_option(
+                    'ziti_connection_dial_service')
+
+        if self.ziti_dial_service_cfg is not None:
+            # We lie to Ansible, because we're gonna dial
+            # by addressable terminator
+            self.set_option('host_key_checking', False)
+            self.set_option('remote_addr', '127.0.0.1')
+            self.set_option('remote_port', 0)
+
+        if not self.ziti_identities:
+            self.ziti_identities = self.get_option('ziti_identities')
 
     @abstractmethod
     def _connect(self) -> None:

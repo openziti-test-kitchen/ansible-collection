@@ -32,8 +32,6 @@ DOCUMENTATION = '''
       - community.openziti.openziti_connection
 '''
 
-display = Display()
-
 IDENTITY_SCHEMA = {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
@@ -67,6 +65,8 @@ IDENTITY_SCHEMA = {
   ]
 }
 
+display = Display()
+
 CONFIG_TYPE = "ansible-target-discovery.v1"
 
 
@@ -85,7 +85,7 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
     """
     # pylint: disable=too-many-statements, too-many-locals
 
-    display.vvv(f"OPENZITI Gathering connection vars from: {identity_file}")
+    display.debug(f"OPENZITI Gathering connection vars from: {identity_file}")
 
     with open(identity_file, 'r', encoding='UTF-8') as id_f:
         id_json = json.load(id_f)
@@ -152,7 +152,7 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
 
             config_dict = config.get(CONFIG_TYPE)
             if not config_dict:
-                display.vvv(
+                display.debug(
                         f"OPENZITI Skipping service: {service.name} => "
                         f"Only services with an {CONFIG_TYPE} "
                         "config are considered."
@@ -166,7 +166,7 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
                     dial_permission_found = True
 
             if not dial_permission_found:
-                display.vvv(
+                display.debug(
                         f"OPENZITI Skipping service: {service.name} => "
                         "Identity does not have permission to Dial service."
                     )
@@ -225,14 +225,17 @@ class InventoryModule(BaseInventoryPlugin):
             try:
                 with open(identity, 'r', encoding='UTF-8') as identity_file:
                     identity_json = json.load(identity_file)
+            except FileNotFoundError:
+                self.display.error(f"OPENZITI File not found: {identity}")
             except ValueError:
-                display.vvv(
-                        f"OPENZITI Could not load identity file: {identity}")
+                self.display.error(
+                    f"OPENZITI Could not load identity file: {identity}")
             else:
                 try:
                     validate(identity_json, IDENTITY_SCHEMA)
                 except ValidationError:
-                    display.vvv("OPENZITI Identity failed schema validation.")
+                    self.display.error(
+                        "OPENZITI Identity failed schema validation.")
                 else:
                     valid = True
         return valid
