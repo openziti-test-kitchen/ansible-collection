@@ -10,6 +10,7 @@ from typing import Dict, List, Optional
 import openziti
 from ansible.plugins.connection import ConnectionBase
 from ansible.utils.display import Display
+from openziti.context import ZitiContext
 
 display = Display()
 
@@ -21,6 +22,7 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
         self._ziti_identities: List[str] = []
         self._ziti_log_level = int(os.getenv('ZITI_LOG', '-1'))
         self._ziti_dial_service_cfg: Optional[Dict[str, str]] = None
+        self._ziti_ssh_client = None
         super().__init__(*args, **kwargs)
 
     @property
@@ -85,6 +87,13 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
 
         if not self.ziti_identities:
             self.ziti_identities = self.get_option('ziti_identities')
+
+        if not self._ziti_ssh_client:
+            self._ziti_ssh_client = self._get_client_with_context()
+
+    @abstractmethod
+    def _get_client_with_context(self):
+        """Patched SSH Client"""
 
     @abstractmethod
     def _connect(self) -> None:
