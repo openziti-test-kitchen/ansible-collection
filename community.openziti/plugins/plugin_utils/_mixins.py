@@ -115,17 +115,32 @@ class SSHMixin:
             self._service = self._dial_cfg['ziti_connection_service']
             self._terminator = self._dial_cfg.get(
                     'ziti_connection_service_terminator')
+        else:
+            self._sock = openziti.socket(type=socket.SOCK_STREAM)
+
+        super().__init__(*args, **kwargs)
+
+    def connect(self, *args, **kwargs) -> None:
+        """Connect to zitified host"""
+        if self._ztx is not None:
             display.vvv(
                 "OPENZITI DIALING SERVICE: "
                 f"{self._terminator}@{self._service}")
-
-            self._sock = self._ztx.connect(
-                    self._service, terminator=self._terminator)
+            self._sock = self._ztx.connect(self._service,
+                                           terminator=self._terminator)
         else:
-            self._sock = openziti.socket(type=socket.SOCK_STREAM)
+            display.vvv(
+                "OPENZITI DIALING SERVICE: "
+                f"{kwargs['host']}:{kwargs['port']}")
+            self._sock.connect((kwargs['host'], kwargs['port']))
+
         self._sockfd = self._sock.fileno()
         display.vvv(f"OPENZITI TUNNELED CONNECTION via fd={self._sockfd}")
-        super().__init__(*args, **kwargs)
+
+        update_kwargs = self.set_sockfd()
+        if update_kwargs is not None:
+            kwargs.update(update_kwargs)
+        super().connect(*args, **kwargs)
 
     @property
     def dial_cfg(self) -> Optional[Dict]:
@@ -143,12 +158,3 @@ class SSHMixin:
     @abstractmethod
     def set_sockfd(self) -> Optional[dict]:
         """Implements SSH library specific operation to set socket fd"""
-
-    def connect(self, *args, **kwargs) -> None:
-        """Connect to zitified host"""
-        if self._service is None:
-            self._sock.connect((kwargs['host'], kwargs['port']))
-        update_kwargs = self.set_sockfd()
-        if update_kwargs is not None:
-            kwargs.update(update_kwargs)
-        super().connect(*args, **kwargs)
