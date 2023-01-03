@@ -1,3 +1,4 @@
 .editorconfig
 __pycache__
 tags
+*.swp

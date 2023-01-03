@@ -5,15 +5,11 @@
 """OpenZiti pylibssh connection plugin wrapper"""
 from __future__ import (absolute_import, annotations, division, print_function)
 
-from typing import Dict, Optional
-
 import ansible_collections.ansible.netcommon.plugins.connection.libssh as PyLibSSH
 import openziti
 from ansible.utils.display import Display
-from ansible_collections.community.openziti.plugins.plugin_utils._decorators \
-    import zitify_client
 from ansible_collections.community.openziti.plugins.plugin_utils._mixins \
-    import ConnectionMixin
+    import ConnectionMixin, SSHMixin
 
 display = Display()
 
@@ -28,24 +24,20 @@ DOCUMENTATION = '''
     '''
 
 
-def get_client_with_context(cfg: Optional[Dict[str, str]]) -> object:
-    """
-    Closure around pylibss.Session
+def get_ziti_client(cfg) -> object:
+    """Closure around the ZitiSession class"""
+    class ZitiSSHSession(SSHMixin, PyLibSSH.Session):
+        """pylibssh.session.Session impl"""
 
-    :param cfg:
-        Dictionary with openziti connection variables.
-        See the ziti_connection_dial_service suboptions for details.
-    :returns: ZitiSession class
-    """
-    @zitify_client(cfg)
-    class ZitiSession(PyLibSSH.Session):
-        """OpenZiti pylibssh.Session Wrapper"""
+        def set_dial_cfg(self):
+            """Set dial_cfg"""
+            self.dial_cfg = cfg
 
-        def connect(self, **kwargs) -> None:
-            """PyLibSSH.Session.connect wrapper"""
+        def set_sockfd(self) -> None:
+            """Set sockopt for sockfd"""
             self.set_ssh_options('fd', self._sockfd)
-            super().connect(**kwargs)
-    return ZitiSession
+
+    return ZitiSSHSession
 
 
 class Connection(PyLibSSH.Connection, ConnectionMixin):
@@ -56,8 +48,9 @@ class Connection(PyLibSSH.Connection, ConnectionMixin):
     transport = 'community.openziti.libssh'
 
     def _get_client_with_context(self):
-        PyLibSSH.Session = get_client_with_context(
-                cfg=self.ziti_dial_service_cfg)
+        ziti_client = get_ziti_client(self.ziti_dial_service_cfg)
+        PyLibSSH.Session = ziti_client
+        return ziti_client
 
     def _connect(self) -> None:
         '''Wrap connection activation object with OpenZiti'''

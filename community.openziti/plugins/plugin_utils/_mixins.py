@@ -4,6 +4,7 @@
 # Apache License, Version 2 (see http://www.apache.org/licenses/LICENSE-2.0)
 """OpenZiti Ansible Collection Mixins"""
 import os
+import socket
 from abc import ABCMeta, abstractmethod
 from typing import Dict, List, Optional
 
@@ -22,7 +23,7 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
         self._ziti_identities: List[str] = []
         self._ziti_log_level = int(os.getenv('ZITI_LOG', '-1'))
         self._ziti_dial_service_cfg: Optional[Dict[str, str]] = None
-        self._ziti_ssh_client = None
+        self._ziti_ssh_client: Optional[object] = None
         super().__init__(*args, **kwargs)
 
     @property
@@ -92,9 +93,62 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
             self._ziti_ssh_client = self._get_client_with_context()
 
     @abstractmethod
-    def _get_client_with_context(self):
+    def _get_client_with_context(self) -> object:
         """Patched SSH Client"""
 
     @abstractmethod
     def _connect(self) -> None:
         """Connection class _connect() wrapper impl"""
+
+
+class SSHMixin:
+    """SSH client mixing"""
+    def __init__(self, *args, **kwargs) -> None:
+        self.set_dial_cfg()
+        self._ztx: Optional[ZitiContext] = None
+        self._service: Optional[str] = None
+        self._terminator: Optional[str] = None
+
+        if self._dial_cfg is not None:
+            self._ztx = openziti.load(
+                    self._dial_cfg['ziti_connection_identity_file'])
+            self._service = self._dial_cfg['ziti_connection_service']
+            self._terminator = self._dial_cfg.get(
+                    'ziti_connection_service_terminator')
+            display.vvv(
+                "OPENZITI DIALING SERVICE: "
+                f"{self._terminator}@{self._service}")
+
+            self._sock = self._ztx.connect(
+                    self._service, terminator=self._terminator)
+        else:
+            self._sock = openziti.socket(type=socket.SOCK_STREAM)
+        self._sockfd = self._sock.fileno()
+        display.vvv(f"OPENZITI TUNNELED CONNECTION via fd={self._sockfd}")
+        super().__init__(*args, **kwargs)
+
+    @property
+    def dial_cfg(self) -> Optional[Dict]:
+        """Return dial_cfg"""
+        return self._dial_cfg
+
+    @dial_cfg.setter
+    def dial_cfg(self, dial_cfg: Optional[Dict] = None):
+        self._dial_cfg = dial_cfg
+
+    @abstractmethod
+    def set_dial_cfg(self, cfg: Optional[Dict] = None) -> None:
+        """Sets config from closure"""
+
+    @abstractmethod
+    def set_sockfd(self) -> Optional[dict]:
+        """Implements SSH library specific operation to set socket fd"""
+
+    def connect(self, *args, **kwargs) -> None:
+        """Connect to zitified host"""
+        if self._service is None:
+            self._sock.connect((kwargs['host'], kwargs['port']))
+        update_kwargs = self.set_sockfd()
+        if update_kwargs is not None:
+            kwargs.update(update_kwargs)
+        super().connect(*args, **kwargs)
