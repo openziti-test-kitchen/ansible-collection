@@ -3,17 +3,19 @@
 # Copyright: NetFoundry Inc.
 # Apache License, Version 2 (see http://www.apache.org/licenses/LICENSE-2.0)
 """OpenZiti pylibssh connection plugin wrapper"""
-from __future__ import (absolute_import, annotations, division, print_function)
+from __future__ import absolute_import, annotations, division, print_function
 
-import ansible_collections.ansible.netcommon.plugins.connection.libssh as PyLibSSH
-import openziti
+# pylint: disable=import-error, no-name-in-module
+# pylint: disable=too-few-public-methods
+
+import ansible_collections.ansible.netcommon.plugins.connection.libssh \
+    as PyLibSSH
 from ansible.utils.display import Display
 from ansible_collections.community.openziti.plugins.plugin_utils._mixins \
-    import ConnectionMixin, SSHMixin
+    import (ConnectionMixin, SSHMixin)
 
 display = Display()
 
-# pylint: disable=too-few-public-methods
 
 DOCUMENTATION = '''
     extends_documentation_fragment:
@@ -28,6 +30,7 @@ def get_ziti_client(cfg) -> object:
     """Closure around the ZitiSession class"""
     class ZitiSSHSession(SSHMixin, PyLibSSH.Session):
         """pylibssh.session.Session impl"""
+        # pylint: disable=attribute-defined-outside-init
 
         def set_dial_cfg(self):
             """Set dial_cfg"""
@@ -42,8 +45,6 @@ def get_ziti_client(cfg) -> object:
 
 class Connection(PyLibSSH.Connection, ConnectionMixin):
     '''OpenZiti based connection wrapper for libssh'''
-    # pylint: disable=access-member-before-definition
-    # pylint: disable=attribute-defined-outside-init
 
     transport = 'community.openziti.libssh'
 

@@ -6,15 +6,14 @@
 from __future__ import absolute_import, annotations, division, print_function
 
 # pylint: disable=import-error, no-name-in-module
-from typing import Dict, Optional
+# pylint: disable=too-few-public-methods
 
-import openziti
 from ansible.plugins.connection.paramiko_ssh import \
     Connection as ParamikoConnection
 from ansible.plugins.connection.paramiko_ssh import paramiko
 from ansible.utils.display import Display
 from ansible_collections.community.openziti.plugins.plugin_utils._mixins \
-    import ConnectionMixin, SSHMixin
+    import (ConnectionMixin, SSHMixin)
 
 display = Display()
 
@@ -32,8 +31,8 @@ def get_ziti_client(cfg) -> object:
     Closure around paramiko.SSHClient
     """
     class ZitiSSHClient(SSHMixin, paramiko.SSHClient):
-        # pylint: disable=too-few-public-methods
         """OpenZiti paramiko.SSHClient wrapper"""
+        # pylint: disable=attribute-defined-outside-init
 
         def set_dial_cfg(self):
             """Set dial_cfg"""
