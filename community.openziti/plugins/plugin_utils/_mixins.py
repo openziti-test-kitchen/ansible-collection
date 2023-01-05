@@ -53,7 +53,7 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
         for identity in identities:
             openziti.load(identity)
             self._ziti_identities.append(identity)
-            display.debug(f"OPENZITI LOAD IDENTITY: {identity}",
+            display.vvv(f"OPENZITI LOAD IDENTITY: {identity}",
                           host=self.get_option('remote_addr'))
 
     @property
@@ -67,7 +67,7 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
         if cfg is not None:
             self._ziti_identities.append(cfg['ziti_connection_identity_file'])
             self._ziti_dial_service_cfg = cfg
-            display.debug(f"OPENZITI SET DIAL SERVICE CONFIGURATION: {cfg}",
+            display.vvv(f"OPENZITI SET DIAL SERVICE CONFIGURATION: {cfg}",
                           host=self.get_option('remote_addr'))
 
     def init_options(self) -> None:
@@ -105,13 +105,16 @@ class SSHMixin:
     """SSH client mixing"""
     def __init__(self, *args, **kwargs) -> None:
         self.set_dial_cfg()
+        self._identity: Optional[str] = None
         self._ztx: Optional[ZitiContext] = None
         self._service: Optional[str] = None
         self._terminator: Optional[str] = None
 
         if self._dial_cfg is not None:
-            self._ztx = openziti.load(
-                    self._dial_cfg['ziti_connection_identity_file'])
+            self._identity = self._dial_cfg['ziti_connection_identity_file']
+            self._ztx = openziti.load(self._identity)
+            display.vvv(f"OPENZITI CLIENT LOAD IDENTITY: {self._identity}")
+
             self._service = self._dial_cfg['ziti_connection_service']
             self._terminator = self._dial_cfg.get(
                     'ziti_connection_service_terminator')

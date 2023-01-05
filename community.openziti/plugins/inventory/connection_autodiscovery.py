@@ -205,7 +205,7 @@ def gather_identity_data(identity_file: str) -> Dict[str, Any]:
 class InventoryModule(BaseInventoryPlugin):
     """OpenZiti automatic discovery of targets."""
 
-    NAME = 'community.openziti.connection_autodiscover'
+    NAME = 'community.openziti.connection_autodiscovery'
 
     def __init__(self):
         self._identities = []
@@ -216,7 +216,7 @@ class InventoryModule(BaseInventoryPlugin):
         valid = False
         b_path = to_bytes(path, errors='surrogate_or_strict')
         if not os.path.exists(b_path) and not \
-                path.split('/')[-1] == "openziti_connection_autodiscover":
+                path.split('/')[-1] == "openziti_connection_autodiscovery":
             return valid
 
         self._identities.extend(self.get_option('ziti_identities'))

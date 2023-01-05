@@ -32,7 +32,7 @@ ansible-doc -t connection community.openziti.libssh
 # === Modules Plugins ===
 ansible-doc -t module community.openziti.enroll_token
 # === Inventory Plugins ===
-ansible-doc -t inventory community.openziti.connection_autodiscover
+ansible-doc -t inventory community.openziti.connection_autodiscovery
 ```
 
 ## Notes
