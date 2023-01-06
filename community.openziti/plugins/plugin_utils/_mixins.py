@@ -113,9 +113,8 @@ class SSHMixin:
 
         if self._dial_cfg is not None:
             self._identity = self._dial_cfg['ziti_connection_identity_file']
-            self._ztx = openziti.load(self._identity)
             display.vvv(f"OPENZITI CLIENT LOAD IDENTITY: {self._identity}")
-
+            self._ztx = openziti.load(self._identity)
             self._service = self._dial_cfg['ziti_connection_service']
             self._terminator = self._dial_cfg.get(
                     'ziti_connection_service_terminator')
