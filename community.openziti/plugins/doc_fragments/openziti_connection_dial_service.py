@@ -13,7 +13,7 @@ class ModuleDocFragment():
       ziti_connection_dial_service:
         description: |
             Dial ziti service directly by name.
-            Can specify terminator identity to 
+            Can specify terminator identity to
             dial specific service terminator.
         vars:
           - name: ziti_connection_dial_service
