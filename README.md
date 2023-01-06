@@ -40,7 +40,7 @@ ansible-doc -t inventory community.openziti.connection_autodiscovery
 * The `community.openziti.libssh` connection plugin is experimental.
   Prefer the paramiko connection plugin instead.
 * The `connection_autodiscover` connection plugin involves some OpenZiti setup
-  to function. Please see this GitHub project's 
+  to function. Please see this GitHub project's
   [wiki](https://github.com/openziti-test-kitchen/ansible-collection/wiki/OpenZiti-Inventory-Autodiscovery-Setup) for details.
 
 ## Contributing
