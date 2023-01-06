@@ -9,6 +9,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Dict, List, Optional
 
 import openziti
+from ansible.errors import AnsibleRuntimeError
 from ansible.plugins.connection import ConnectionBase
 from ansible.utils.display import Display
 from openziti.context import ZitiContext
@@ -54,7 +55,7 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
             openziti.load(identity)
             self._ziti_identities.append(identity)
             display.vvv(f"OPENZITI LOAD IDENTITY: {identity}",
-                          host=self.get_option('remote_addr'))
+                        host=self.get_option('remote_addr'))
 
     @property
     def ziti_dial_service_cfg(self) -> Optional[Dict[str, str]]:
@@ -68,7 +69,7 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
             self._ziti_identities.append(cfg['ziti_connection_identity_file'])
             self._ziti_dial_service_cfg = cfg
             display.vvv(f"OPENZITI SET DIAL SERVICE CONFIGURATION: {cfg}",
-                          host=self.get_option('remote_addr'))
+                        host=self.get_option('remote_addr'))
 
     def init_options(self) -> None:
         """Helper to initialize _connect() method options"""
@@ -132,10 +133,22 @@ class SSHMixin:
             self._sock = self._ztx.connect(self._service,
                                            terminator=self._terminator)
         else:
-            display.vvv(
-                "OPENZITI DIALING SERVICE: "
-                f"{kwargs['host']}:{kwargs['port']}")
-            self._sock.connect((kwargs['host'], kwargs['port']))
+            try:
+                host = kwargs['host']
+            except KeyError:
+                try:
+                    host = args[0]
+                except IndexError as err:
+                    raise AnsibleRuntimeError(
+                        "unexpected error in connect(): unsupported signature"
+                    ) from err
+
+            if not isinstance(host, str):
+                raise AnsibleRuntimeError(
+                    "unexpected error in connect(): host is not a str")
+
+            display.vvv(f"OPENZITI DIALING INTERCEPT: {host}:{kwargs['port']}")
+            self._sock.connect((host, kwargs['port']))
 
         self._sockfd = self._sock.fileno()
         display.vvv(f"OPENZITI TUNNELED CONNECTION via fd={self._sockfd}")
