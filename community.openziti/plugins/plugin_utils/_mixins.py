@@ -24,7 +24,6 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
         self._ziti_identities: List[str] = []
         self._ziti_log_level = int(os.getenv('ZITI_LOG', '-1'))
         self._ziti_dial_service_cfg: Optional[Dict[str, str]] = None
-        self._ziti_ssh_client: Optional[object] = None
         super().__init__(*args, **kwargs)
 
     @property
@@ -66,7 +65,7 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
     def ziti_dial_service_cfg(self, cfg: Optional[Dict[str, str]]) -> None:
         "Loads dial service configuration"
         if cfg is not None:
-            self._ziti_identities.append(cfg['ziti_connection_identity_file'])
+            self.ziti_identities = [cfg['ziti_connection_identity_file']]
             self._ziti_dial_service_cfg = cfg
             display.vvv(f"OPENZITI SET DIAL SERVICE CONFIGURATION: {cfg}",
                         host=self.get_option('remote_addr'))
@@ -84,18 +83,11 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
             # We lie to Ansible, because we're gonna dial
             # by addressable terminator
             self.set_option('host_key_checking', False)
-            self.set_option('remote_addr', '127.0.0.1')
+            self.set_option('remote_addr', '0.0.0.1')
             self.set_option('remote_port', 0)
 
         if not self.ziti_identities:
             self.ziti_identities = self.get_option('ziti_identities')
-
-        if not self._ziti_ssh_client:
-            self._ziti_ssh_client = self._get_client_with_context()
-
-    @abstractmethod
-    def _get_client_with_context(self) -> object:
-        """Patched SSH Client"""
 
     @abstractmethod
     def _connect(self) -> None:
@@ -103,7 +95,7 @@ class ConnectionMixin(ConnectionBase, metaclass=ABCMeta):
 
 
 class SSHMixin:
-    """SSH client mixing"""
+    """SSH client mixin"""
     def __init__(self, *args, **kwargs) -> None:
         self.set_dial_cfg()
         self._identity: Optional[str] = None
@@ -123,39 +115,18 @@ class SSHMixin:
 
         super().__init__(*args, **kwargs)
 
-    def connect(self, *args, **kwargs) -> None:
-        """Connect to zitified host"""
+    def _connect(self, addr: tuple[str, int]) -> None:
         if self._ztx is not None:
-            display.vvv(
-                "OPENZITI DIALING SERVICE: "
-                f"{self._terminator}@{self._service}")
-            self._sock = self._ztx.connect(self._service,
-                                           terminator=self._terminator)
+            display.vvv("OPENZITI DIALING SERVICE: "
+                        f"{self._terminator}@{self._service}")
+            self._sock = self._ztx.connect(
+                    self._service, terminator=self._terminator)
         else:
-            try:
-                host = kwargs['host']
-            except KeyError:
-                try:
-                    host = args[0]
-                except IndexError as err:
-                    raise AnsibleRuntimeError(
-                        "unexpected error in connect(): unsupported signature"
-                    ) from err
-
-            if not isinstance(host, str):
-                raise AnsibleRuntimeError(
-                    "unexpected error in connect(): host is not a str")
-
-            display.vvv(f"OPENZITI DIALING INTERCEPT: {host}:{kwargs['port']}")
-            self._sock.connect((host, kwargs['port']))
+            display.vvv(f"OPENZITI DIALING INTERCEPT: {addr[0]}:{addr[1]}")
+            self._sock.connect((addr[0], addr[1]))
 
         self._sockfd = self._sock.fileno()
         display.vvv(f"OPENZITI TUNNELED CONNECTION via fd={self._sockfd}")
-
-        update_kwargs = self.set_sockfd()
-        if update_kwargs is not None:
-            kwargs.update(update_kwargs)
-        super().connect(*args, **kwargs)
 
     @property
     def dial_cfg(self) -> Optional[Dict]:
@@ -169,7 +140,3 @@ class SSHMixin:
     @abstractmethod
     def set_dial_cfg(self, cfg: Optional[Dict] = None) -> None:
         """Sets config from closure"""
-
-    @abstractmethod
-    def set_sockfd(self) -> Optional[dict]:
-        """Implements SSH library specific operation to set socket fd"""

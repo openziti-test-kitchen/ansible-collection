@@ -12,7 +12,7 @@ import ansible_collections.ansible.netcommon.plugins.connection.libssh \
     as PyLibSSH
 from ansible.utils.display import Display
 from ansible_collections.community.openziti.plugins.plugin_utils._mixins \
-    import (ConnectionMixin, SSHMixin)
+    import ConnectionMixin, SSHMixin
 
 display = Display()
 
@@ -26,21 +26,37 @@ DOCUMENTATION = '''
     '''
 
 
-def get_ziti_client(cfg) -> object:
-    """Closure around the ZitiSession class"""
-    class ZitiSSHSession(SSHMixin, PyLibSSH.Session):
-        """pylibssh.session.Session impl"""
-        # pylint: disable=attribute-defined-outside-init
+class PatchedClient:
+    """Context manager for Ziti SSH Client"""
+    def __init__(self, module, class_name: str, cfg: dict):
+        self.module = module
+        self.class_name = class_name
+        self.dial_cfg = cfg
+        self.original_class = getattr(module, class_name)
 
-        def set_dial_cfg(self):
-            """Set dial_cfg"""
-            self.dial_cfg = cfg
+    def __enter__(self):
+        cfg = self.dial_cfg
 
-        def set_sockfd(self) -> None:
-            """Set sockopt for sockfd"""
-            self.set_ssh_options('fd', self._sockfd)
+        class ZitiClient(SSHMixin, self.original_class):
+            """pylibssh.session.Session impl"""
+            # pylint: disable=attribute-defined-outside-init
 
-    return ZitiSSHSession
+            def set_dial_cfg(self) -> None:
+                """Set dial_cfg"""
+                self.dial_cfg = cfg
+
+            def connect(self, **kwargs) -> None:
+                """libssh patched connect"""
+                self._connect((kwargs['host'], kwargs['port']))
+
+                self.set_ssh_options('fd', self._sockfd)
+
+                super().connect(**kwargs)
+
+        setattr(self.module, self.class_name, ZitiClient)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        setattr(self.module, self.class_name, self.original_class)
 
 
 class Connection(PyLibSSH.Connection, ConnectionMixin):
@@ -48,12 +64,9 @@ class Connection(PyLibSSH.Connection, ConnectionMixin):
 
     transport = 'community.openziti.libssh'
 
-    def _get_client_with_context(self):
-        ziti_client = get_ziti_client(self.ziti_dial_service_cfg)
-        PyLibSSH.Session = ziti_client
-        return ziti_client
-
     def _connect(self) -> None:
         '''Wrap connection activation object with OpenZiti'''
         self.init_options()
-        super()._connect()
+
+        with PatchedClient(PyLibSSH, 'Session', self.ziti_dial_service_cfg):
+            super()._connect()
