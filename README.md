@@ -26,15 +26,22 @@ pip install --requirements ./ansible_collections/community/openziti/requirements
 You can read the docs using `ansible-doc`:
 
 ```bash
-# Example
+# === Connection Plugins ===
 ansible-doc -t connection community.openziti.paramiko
 ansible-doc -t connection community.openziti.libssh
+# === Modules Plugins ===
 ansible-doc -t module community.openziti.enroll_token
+# === Inventory Plugins ===
+ansible-doc -t inventory community.openziti.connection_autodiscovery
 ```
 
-## Note
+## Notes
 
-The `community.openziti.libssh` connection plugin is experimental. Prefer the paramiko connection plugin instead.
+* The `community.openziti.libssh` connection plugin is experimental.
+  Prefer the paramiko connection plugin instead.
+* The `connection_autodiscovery` dynamic inventory plugin involves some OpenZiti setup
+  to function. Please see this GitHub project's
+  [wiki](https://github.com/openziti-test-kitchen/ansible-collection/wiki/OpenZiti-Inventory-Autodiscovery:-Overview) for details.
 
 ## Contributing
 
