@@ -1,0 +1,11 @@
+---
+
+- hosts: all
+
+  tasks:
+    - community.openziti.openziti_pki:
+        ca_name: "test_ca ROOT CA"
+        component_file: "test_ca_two"
+        pki_path: "/home/ubuntu/pki_test"
+        component: "ca"
+        state: "present"
