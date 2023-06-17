@@ -173,9 +173,8 @@ def ziti_pki(module):
     else:
         return_code = path.isdir(component_path)
         std_out = "Success\n"
-        std_err = """error: cannot sign: failed saving generated bundle: 
-        a bundle already exists for the name {component_name} within CA {ca_name}
-        """.format(
+        std_err = "error: cannot sign: failed saving generated bundle: "\
+        "a bundle already exists for the name {component_name} within CA {ca_name}".format(
             component_name=module.params.get("component_name") or module.params.get("ca_name"),
             ca_name=module.params.get("ca_name")
         )
