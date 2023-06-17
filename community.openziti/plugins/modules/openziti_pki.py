@@ -19,6 +19,7 @@ description:
     - Create self signed Intermediate certificates
     - Create self signed client/server certificates
 options:
+    state:
     ca_name:
         description:
             - Name of the certificate authority 
@@ -106,8 +107,34 @@ def server_specific_params(module):
         "--dns", module.params.get('dns'),
         "--ip", module.params.get('ip')
     ]
+
+def pki_build_args(module):
+    pki_args = None
     
-def ziti_pki(module, pki_args: List):
+    if module.params.get("component") == "ca":
+        pki_args = ca_specific_params(module)
+    elif module.params.get("component") == "intermediate":
+        pki_args = intermediate_specific_params(module)
+    elif module.params.get("component") == "client":
+        pki_args = client_specific_params(module)
+    elif module.params.get("component") == "server":
+        pki_args = server_specific_params(module)
+    else:
+        raise ValueError("Parameter `component` needs to be in [ca, intermediate, client, server]")
+    
+    return module.ziti + [
+        "pki", "create", module.params.get('component', 'ca'),
+        "--ca-name", module.params.get('ca_name'),
+        "--max-path-len", module.params.get('max_path_len'),
+        "--pki-country", module.params.get('country'),
+        "--pki-locality", module.params.get('locality'),
+        "--pki-province",module.params.get('province'),
+        "--pki-organization", module.params.get('organization'),
+        "--pki-organizational-unit", module.params.get('organizational_unit'),
+        "--pki-root",module.params.get('pki_path')
+    ] + pki_args
+
+def ziti_pki(module):
     from os import path, makedirs
     from shutil import rmtree
 
@@ -136,25 +163,16 @@ def ziti_pki(module, pki_args: List):
             }
         }
 
-    command = module.ziti + [
-        "pki", "create", module.params.get('component', 'ca'),
-        "--ca-name", module.params.get('ca_name'),
-        "--max-path-len", module.params.get('max_path_len'),
-        "--pki-country", module.params.get('country'),
-        "--pki-locality", module.params.get('locality'),
-        "--pki-province",module.params.get('province'),
-        "--pki-organization", module.params.get('organization'),
-        "--pki-organizational-unit", module.params.get('organizational_unit'),
-        "--pki-root",module.params.get('pki_path')
-    ] + pki_args
-
     if not module.check_mode:
         if not path.isdir(module.params['pki_path']):
             makedirs(module.params['pki_path'])
+
+        command = pki_build_args(module)
+
         return_code, std_out, std_err = module.run_command(command)
     else:
         return_code = path.isdir(component_path)
-        std_out = "Success"
+        std_out = "Success\n"
         std_err = """error: cannot sign: failed saving generated bundle: 
         a bundle already exists for the name {component_name} within CA {ca_name}
         """.format(
@@ -162,7 +180,7 @@ def ziti_pki(module, pki_args: List):
             ca_name=module.params.get("ca_name")
         )
 
-
+    
     changed = not return_code
 
     return {
@@ -174,6 +192,16 @@ def ziti_pki(module, pki_args: List):
         }
     }
 
+def run_module(ziti_cli):
+    
+    result = dict(changed=False, msg=None, diff=None)
+
+    result = ziti_pki(
+        ziti_cli
+    )
+
+    ziti_cli.exit_json(**result)
+
 def setup_module():
     return OpenZiti(
         argument_spec=ARGUMENT_SPEC,
@@ -184,26 +212,8 @@ def setup_module():
 def main():
     
     ziti_cli = setup_module()
+    run_module(ziti_cli)
     
-    result = dict(changed=False, msg=None, diff=None)
-
-    pki_args = None
-    
-    if ziti_cli.params.get("component") == "ca":
-        pki_args = ca_specific_params(ziti_cli)
-    elif ziti_cli.params.get("component") == "intermediate":
-        pki_args = intermediate_specific_params(ziti_cli)
-    elif ziti_cli.params.get("component") == "client":
-        pki_args = client_specific_params(ziti_cli)
-    elif ziti_cli.params.get("component") == "server":
-        pki_args = server_specific_params(ziti_cli)
-
-    result = ziti_pki(
-        ziti_cli,
-        pki_args
-    )
-
-    ziti_cli.module.exit_json(**result)
 
 if __name__ == '__main__':
     main()
