@@ -14,20 +14,47 @@ author:
 version: 0.1.0
 short_description: Manage PKI for OpenZiti through OpenZiti CLI
 description:
-    - Create Certificate authority 
+    - Create Certificate Authority 
     - Create self signed Root certificates
     - Create self signed Intermediate certificates
     - Create self signed client/server certificates
 options:
     state:
+        description:
+            - Indicates the desired PKI component state.
+        type: str
+        default: present
+        choices: [ absent, present ]
+    component:
+        description:
+            - Indicates the PKI component.
+        type: str
+        default: ca
+        choices: [ ca, intermediate, client, server, csr, key ]
+    ziti_cli_path:
+        description
+            - Corresponds to the path to the `ziti cli` binaries
+            - If not specified, the modules will try to infer it from the `ziti` command
+        type: str
+        required: false
     ca_name:
         description:
-            - Name of the certificate authority 
+            - Name of the Certificate Authority
+            - Required if component in [ ca, intermediate, client, server, key ]
         type: str
-        required: true
+        required: false
     component_file:
         description:
-            - 
+            - Name of the file
+            - Corresponds to `--ca-file` for certificate authority
+            - Corresponds to `--intermediate-file` for intermediate certificates
+            - Corresponds to `--client-file` for client certificates
+            - Corresponds to `--server-file` for server certificates
+            - Corresponds to `--csr-file` for client certificate signing requests
+            - Corresponds to `--key-file` for private keys
+        type: str
+        required: true
+    
 '''
 
 RETURN = '''
@@ -38,16 +65,25 @@ from ansible_collections.community.openziti.plugins.module_utils.openziti_cli im
 
 ARGUMENT_SPEC = dict(
     state=dict(choices=['present', 'absent'], default='present'),
-    component=dict(choices=['ca', 'intermediate', 'client', 'server'], default='ca'),
-    ziti_cli_path=dict(type='str', default =None),
+    component=dict(choices=['ca', 'intermediate', 'client', 'server', "csr", "key"], default='ca'),
+    ziti_cli_path=dict(type='str', default=None),
     ca_name=dict(type='str'),
-    component_file=dict(required=True, type='str'),
-    component_name=dict(type='str', default=None),
+    component_file=dict(
+        type='str',
+        default=None,
+        aliases=["ca-file", "intermediate_file", "client_file", "server_file", "csr_file", "key_file"]
+    ),
+    component_name=dict(
+        type='str',
+        default=None,
+        aliases=["intermediate_name", "client_name", "server_name", "csr_name"]
+    ),
     key_file=dict(type='str', default=None),
+    key_name=dict(type='str', default=None),
     email=dict(type='str', default=None),
     dns=dict(type='str', default=None),
     ip=dict(type='str', default=None),
-    pki_path=dict(required=True, type='str'),
+    pki_path=dict(required=True, type='str', aliases=["pki_root"]),
     max_path_len=dict(type='int', default=-1),
     private_key_size=dict(type='int', default=None),
     expire_limit=dict(type='int', default=None),
@@ -55,57 +91,99 @@ ARGUMENT_SPEC = dict(
     locality=dict(default='Charlotte', type='str'),
     organization=dict(default='NetFroundry', type='str'),
     organizational_unit=dict(default='ADV-DEV', type='str'),
-    province=dict(default='NC', type='str')
+    province=dict(default='NC', type='str'),
+    spiffe_id=dict(type='str', default=None),
+    trust_domain=dict(type='str', default=None)
 )
 
 REQUIRED_IF = [
-    ("state", "absent", ["component_file"]),
-    ("state", "present", ["ca_name", "pki_path", "component", "component_file"]),
-    ('component', 'intermediate', ["component_name"]),
-    ('component', 'client', ["component_name"]),
-    ('component', 'server', ["component_name"])
+    ("state", "present", ["pki_path", "component"]),
+    ('component', 'client', ["key_file", "email"]),
+    ('component', 'server', ["key_file", "ip", "dns"]),
+    ('component', 'key', ["ca_name"]),
+    ('component', "crs", ["key_name"])
 ]
 
 SUPPORTS_CHECK_MODE = True
 
 def ca_specific_params(module):
 
-    return [
+    command = [
+        "--ca-name", module.params.get('ca_name') or "NetFoundry Inc. Certificate Authority",
         "--ca-file", module.params.get('component_file'),
-        "--private-key-size", module.params.get('private_key_size') or "4096",
-        "--expire-limit", module.params.get('expire_limit') or "3650"
+        "--private-key-size", module.params.get('private_key_size') or 4096,
+        "--expire-limit", module.params.get('expire_limit') or 3650,
+        "--max-path-len", module.params.get('max_path_len')
     ]
+
+    if "trust_domain" in module.params.keys():
+        command = command + ["--trust-domain", module.params.get('trust_domain')]
+    
+    return command
 
 def intermediate_specific_params(module):
 
     return [
-        "--intermediate-file", module.params.get('component_file'),
-        "--intermediate-name", module.params.get('component_name'),
-        "--private-key-size", module.params.get('private_key_size', 4096),
-        "--expire-limit", module.params.get('expire_limit', 3650)
+        "--ca-name", module.params.get('ca_name') or "ca",
+        "--intermediate-file", module.params.get('component_file') or "intermediate",
+        "--intermediate-name", module.params.get('component_name') or "NetFoundry Inc. Intermediate CA",
+        "--private-key-size", module.params.get('private_key_size') or 4096,
+        "--expire-limit", module.params.get('expire_limit') or 3650,
+        "--max-path-len", module.params.get('max_path_len'),
     ]
 
 def client_specific_params(module):
 
     command =  [
-        "--client-file", module.params.get('component_file'),
-        "--client-name", module.params.get('component_name'),
-        "--private-key-size", module.params.get('private_key_size', 2048),
-        "--expire-limit", module.params.get('expire_limit', 365),
+        "--ca-name", module.params.get('ca_name') or "intermediate",
+        "--client-file", module.params.get('component_file') or "client",
+        "--client-name", module.params.get('component_name') or "NetFoundry Inc. Client",
+        "--private-key-size", module.params.get('private_key_size') or 2048,
+        "--expire-limit", module.params.get('expire_limit') or 365,
         "--key-file", module.params.get('key_file'),
-        "--email", module.params.get('email')
+        "--email", module.params.get('email'),
+        "--max-path-len", module.params.get('max_path_len'),
     ]
+
+    if "spiffe_id" in module.params.keys():
+        command = command + ["--spiffe-id", module.params.get("spiffe_id")]
+    
+    return command
 
 def server_specific_params(module):
 
-    return [
-        "--client-file", module.params.get('component_file'),
-        "--client-name", module.params.get('component_name'),
-        "--private-key-size", module.params.get('private_key_size', 4096),
-        "--expire-limit", module.params.get('expire_limit', 365),
-        "--key-file", module.params.get('key_file'),
+    command = [
+        "--ca-name", module.params.get('ca_name') or "intermediate",
         "--dns", module.params.get('dns'),
-        "--ip", module.params.get('ip')
+        "--expire-limit", module.params.get('expire_limit') or 365,
+        "--ip", module.params.get('ip'),
+        "--key-file", module.params.get('key_file'),
+        "--max-path-len", module.params.get('max_path_len'),
+        "--private-key-size", module.params.get('private_key_size') or 4096,
+        "--server-file", module.params.get("server_file") or "server",
+        "--server-name", module.params.get("server_name") or "NetFoundry Inc. Server",
+    ]
+
+    if "spiffe_id" in module.params.keys():
+        command = command + ["--spiffe-id", module.params.get("spiffe_id")]
+    
+    return command
+
+def csr_specific_params(module):
+    return [
+        "--csr-file", module.params.get('component_file') or "csr",
+        "--csr-name", module.params.get('component_name') or "NetFoundry Inc. CSR",
+        "--expire-limit", module.params.get('expire_limit') or 365,
+        "--key-name", module.params.get('key_name'),
+        "--private-key-size", module.params.get('private_key_size') or 4096,
+        "--max-path-len", module.params.get('max_path_len'),
+    ]
+
+def key_specific_params(module):
+    return [
+        "--ca-name", module.params.get('ca_name') or "intermediate",
+        "--key-file", module.params.get('expire_limit') or "key",
+        "--private-key-size", module.params.get('private_key_size') or 4096,
     ]
 
 def pki_build_args(module):
@@ -119,13 +197,15 @@ def pki_build_args(module):
         pki_args = client_specific_params(module)
     elif module.params.get("component") == "server":
         pki_args = server_specific_params(module)
+    elif module.params.get("component") == "csr":
+        pki_args = csr_specific_params(module)
+    elif module.params.get("component") == "key":
+        pki_args = key_specific_params(module)
     else:
-        raise ValueError("Parameter `component` needs to be in [ca, intermediate, client, server]")
+        raise ValueError("Parameter `component` needs to be in [ca, intermediate, client, server, key, csr]")
     
     return module.ziti + [
         "pki", "create", module.params.get('component', 'ca'),
-        "--ca-name", module.params.get('ca_name'),
-        "--max-path-len", module.params.get('max_path_len'),
         "--pki-country", module.params.get('country'),
         "--pki-locality", module.params.get('locality'),
         "--pki-province",module.params.get('province'),
@@ -212,7 +292,6 @@ def main():
     
     ziti_cli = setup_module()
     run_module(ziti_cli)
-    
 
 if __name__ == '__main__':
     main()
