@@ -1,11 +1,11 @@
 ---
 namespace: community
 name: openziti
-version: 0.3.0
+version: 0.4.1
 readme: README.md
 authors:
   - NetFoundry <support@netfoundry.io>
-description: Orchestrate your OpenZiti Network with self-hosted OpenZiti OSS
+description: Orchestrate your OpenZiti Network
 license:
   - Apache-2.0
 license_file: LICENSE
