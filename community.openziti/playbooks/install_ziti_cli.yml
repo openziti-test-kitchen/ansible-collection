@@ -1,4 +1,10 @@
 
+# Run this playbook on all targets
+#  ansible-playbook community.openziti.install_ziti_cli --inventory host1,host2
+
+# Or, if the collection is installed on the target host, then ziti can be installed locally.
+#  ansible-playbook community.openziti.install_ziti_cli --connection local --inventory localhost,
+
 - name: Install ziti CLI
   hosts: all
   become: true
