@@ -1,0 +1,12 @@
+
+- name: Install ziti CLI
+  hosts: all
+  become: true
+  gather_facts: false
+  roles:
+    - community.openziti.openziti_repo
+  tasks:
+    - name: Install ziti CLI
+      ansible.builtin.package:
+        name: openziti
+        state: present
