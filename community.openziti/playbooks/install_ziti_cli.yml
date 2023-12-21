@@ -2,7 +2,7 @@
 - name: Install ziti CLI
   hosts: all
   become: true
-  gather_facts: false
+  gather_facts: true  # facts used by repo role to detect distribution family
   roles:
     - community.openziti.openziti_repo
   tasks:
