@@ -1,7 +1,22 @@
 ---
-# Step 5: start-agent
-# TODO: implement
+# Step 5: Start and verify agent service
+# Doc: linux-service.mdx "Start the service"
+# Command: systemctl --user enable --now zrok2-agent.service
 
-- name: "Step 5: start-agent (placeholder)"
-  ansible.builtin.debug:
-    msg: "Step 5 start-agent — not yet implemented"
+- name: Enable and start zrok2-agent user service
+  ansible.builtin.systemd:
+    name: zrok2-agent.service
+    state: started
+    enabled: true
+    scope: user
+  become: true
+  become_user: "{{ zrok2_agent_user }}"
+
+- name: Verify agent is running
+  ansible.builtin.command:
+    cmd: systemctl --user is-active zrok2-agent.service
+  become: true
+  become_user: "{{ zrok2_agent_user }}"
+  register: agent_active
+  changed_when: false
+  failed_when: agent_active.stdout != 'active'

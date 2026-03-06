@@ -1,7 +1,10 @@
 ---
-# self-contained step 3: run
-# TODO: implement
+# Self-contained step 3: Start all containers
+# Doc: "Start and Use"
 
-- name: "self-contained step 3: run (placeholder)"
-  ansible.builtin.debug:
-    msg: "Not yet implemented"
+- name: Start self-contained agent stack
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: "{{ zrok2_compose_dir }}"
+  register: compose_up
+  changed_when: compose_up.rc == 0

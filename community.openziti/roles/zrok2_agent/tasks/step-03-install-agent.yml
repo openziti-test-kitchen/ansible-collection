@@ -1,7 +1,9 @@
 ---
-# Step 3: install-agent
-# TODO: implement
+# Step 3: Install zrok2-agent package
+# Doc: linux-service.mdx "Install the package"
+# The zrok2-agent package provides the systemd user service unit
 
-- name: "Step 3: install-agent (placeholder)"
-  ansible.builtin.debug:
-    msg: "Step 3 install-agent — not yet implemented"
+- name: Install zrok2-agent package
+  ansible.builtin.package:
+    name: zrok2-agent
+    state: present

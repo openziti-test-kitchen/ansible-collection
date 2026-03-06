@@ -1,7 +1,9 @@
 ---
-# interactive step 2: pull-image
-# TODO: implement
+# Interactive step 2: Pull the zrok2 agent image
+# Doc: "Start the Agent Container" — image: docker.io/openziti/zrok2
 
-- name: "interactive step 2: pull-image (placeholder)"
-  ansible.builtin.debug:
-    msg: "Not yet implemented"
+- name: Pull zrok2 Docker image
+  ansible.builtin.command:
+    cmd: "docker pull {{ zrok2_docker_image }}"
+  register: pull_result
+  changed_when: "'Downloaded newer image' in pull_result.stdout or 'Pull complete' in pull_result.stdout"

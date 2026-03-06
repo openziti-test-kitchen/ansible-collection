@@ -1,7 +1,49 @@
 ---
-# interactive step 1: install-docker
-# TODO: implement
+# Interactive step 1: Install Docker
+# Doc: Prerequisites — Docker with Compose v2
 
-- name: "interactive step 1: install-docker (placeholder)"
-  ansible.builtin.debug:
-    msg: "Not yet implemented"
+- name: Install Docker (Debian/Ubuntu)
+  when: ansible_os_family == 'Debian'
+  block:
+    - name: Install Docker prerequisites
+      ansible.builtin.package:
+        name:
+          - docker.io
+          - docker-compose-v2
+        state: present
+
+    - name: Ensure Docker service is running
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add agent user to docker group
+      ansible.builtin.user:
+        name: "{{ zrok2_agent_user }}"
+        groups: docker
+        append: true
+
+- name: Install Docker (RHEL/AlmaLinux)
+  when: ansible_os_family == 'RedHat'
+  block:
+    - name: Install Docker CE from Docker repo
+      ansible.builtin.package:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+
+    - name: Ensure Docker service is running
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add agent user to docker group
+      ansible.builtin.user:
+        name: "{{ zrok2_agent_user }}"
+        groups: docker
+        append: true

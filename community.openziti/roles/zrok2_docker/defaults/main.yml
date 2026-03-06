@@ -1,3 +1,23 @@
 ---
 # zrok2_docker defaults
-zrok2_docker_approach: interactive
+
+# Which approach: "bind_mount" or "self_contained"
+zrok2_docker_approach: bind_mount
+
+# Container image
+zrok2_docker_image: docker.io/openziti/zrok2
+
+# Account token (required for self-contained; bind-mount assumes host is enabled)
+zrok2_account_token: ""
+
+# API endpoint for self-hosted instances
+zrok2_api_endpoint: ""
+
+# Agent user for bind-mount approach
+zrok2_agent_user: "{{ ansible_user }}"
+
+# Agent console port
+zrok2_agent_console_port: 8888
+
+# Compose project directory
+zrok2_compose_dir: /opt/zrok2-docker
