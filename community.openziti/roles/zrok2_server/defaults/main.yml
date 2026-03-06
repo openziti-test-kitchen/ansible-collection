@@ -1,0 +1,30 @@
+---
+# zrok2_server defaults
+
+# Required: DNS zone for this instance (e.g., zrok.example.com)
+zrok2_dns_zone: ""
+
+# Admin secret for the zrok2 controller (auto-generated if empty)
+zrok2_admin_token: ""
+
+# zrok2 controller listen port
+zrok2_ctrl_port: 18080
+
+# Database backend: "postgres" (default) or "sqlite3"
+zrok2_store_type: postgres
+
+# PostgreSQL password (auto-generated if empty)
+zrok2_db_password: ""
+
+# InfluxDB admin token (auto-generated if empty)
+zrok2_influx_token: ""
+
+# TLS certificate paths (empty = no TLS, frontend binds :8080)
+zrok2_tls_cert: ""
+zrok2_tls_key: ""
+
+# Controller connection (set by openziti_controller or playbook vars)
+ziti_ctrl_address: ""
+ziti_ctrl_port: 1280
+ziti_admin_user: admin
+ziti_admin_password: ""

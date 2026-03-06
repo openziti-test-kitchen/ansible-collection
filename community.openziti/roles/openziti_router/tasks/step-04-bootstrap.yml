@@ -1,0 +1,49 @@
+---
+# Step 4: Run router bootstrap.bash
+# Doc: "Run the bootstrap script"
+
+- name: Run router bootstrap (parent env method)
+  when: input_method == 'env'
+  ansible.builtin.command:
+    cmd: "{{ ziti_router_etc_dir }}/bootstrap.bash"
+    stdin: ""
+  environment:
+    ZITI_BOOTSTRAP: "true"
+    ZITI_ENROLL_TOKEN: "{{ ziti_enroll_token }}"
+    ZITI_ROUTER_ADVERTISED_ADDRESS: "{{ ziti_router_address }}"
+    ZITI_ROUTER_PORT: "{{ ziti_router_port | string }}"
+    VERBOSE: "1"
+  args:
+    creates: "{{ ziti_router_state_dir }}/config.yml"
+
+- name: Run router bootstrap (stdin method)
+  when: input_method == 'stdin'
+  ansible.builtin.command:
+    cmd: "{{ ziti_router_etc_dir }}/bootstrap.bash"
+    stdin: "{{ ziti_router_stdin_payload }}"
+  environment:
+    VERBOSE: "1"
+  args:
+    creates: "{{ ziti_router_state_dir }}/config.yml"
+
+- name: Run router bootstrap (interactive method)
+  when: input_method == 'interactive'
+  ansible.builtin.expect:
+    command: "{{ ziti_router_etc_dir }}/bootstrap.bash"
+    timeout: 120
+    responses:
+      "Generate a default config": "Y"
+      "Router enrollment token": "{{ ziti_enroll_token }}"
+      "Enter the DNS name or IP": "{{ ziti_router_address }}"
+      "Enter the router port": "{{ ziti_router_port }}"
+    creates: "{{ ziti_router_state_dir }}/config.yml"
+
+- name: Run router bootstrap (envfile method)
+  when: input_method == 'envfile'
+  ansible.builtin.command:
+    cmd: "{{ ziti_router_etc_dir }}/bootstrap.bash"
+    stdin: ""
+  environment:
+    VERBOSE: "1"
+  args:
+    creates: "{{ ziti_router_state_dir }}/config.yml"

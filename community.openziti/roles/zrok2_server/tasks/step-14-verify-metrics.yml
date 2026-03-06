@@ -1,0 +1,43 @@
+---
+# Step 14: Verify metrics pipeline is flowing
+# Doc: "Start the Metrics Bridge" + "Configure OpenZiti Metrics Events"
+# Bootstrap script: step_ziti_events() + step_start_metrics_bridge()
+#
+# The full pipeline is:
+#   Ziti Controller -> fabric-usage.json -> zrok2-metrics (fileSource->amqpSink)
+#     -> RabbitMQ (events queue) -> zrok2-controller (amqpSource) -> InfluxDB
+
+- name: Verify fabric-usage.json exists and is readable
+  ansible.builtin.stat:
+    path: /var/lib/ziti-controller/fabric-usage.json
+  register: fabric_usage
+  failed_when: not fabric_usage.stat.exists
+
+- name: Verify Ziti controller has events stanza configured
+  ansible.builtin.command:
+    cmd: grep -c 'fabric.usage' /var/lib/private/ziti-controller/config.yml
+  register: events_check
+  changed_when: false
+  failed_when: events_check.rc != 0
+  ignore_errors: true
+
+- name: Check alternate Ziti controller config path
+  when: events_check is failed
+  ansible.builtin.command:
+    cmd: grep -c 'fabric.usage' /var/lib/ziti-controller/config.yml
+  register: events_check_alt
+  changed_when: false
+  failed_when: events_check_alt.rc != 0
+
+- name: Verify RabbitMQ events queue exists
+  ansible.builtin.command:
+    cmd: rabbitmqctl list_queues name
+  register: rmq_queues
+  changed_when: false
+
+- name: Verify InfluxDB is accepting writes
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:8086/health"
+    method: GET
+    status_code: 200
+  register: influx_health

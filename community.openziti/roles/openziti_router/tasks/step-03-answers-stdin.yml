@@ -1,0 +1,16 @@
+---
+# Step 3: Supply router answers via stdin pipe
+
+- name: "Record input method: stdin pipe"
+  ansible.builtin.debug:
+    msg: >-
+      Supplying router answers via stdin pipe
+      for {{ ziti_router_name }}
+
+- name: Prepare stdin payload for router bootstrap
+  ansible.builtin.set_fact:
+    ziti_router_stdin_payload: |
+      ZITI_BOOTSTRAP=true
+      ZITI_ENROLL_TOKEN={{ ziti_enroll_token }}
+      ZITI_ROUTER_ADVERTISED_ADDRESS={{ ziti_router_address }}
+      ZITI_ROUTER_PORT={{ ziti_router_port }}

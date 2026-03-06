@@ -1,0 +1,22 @@
+---
+# Step 1: Create edge router in controller
+# Doc: "Create the router"
+
+- name: Create edge router {{ ziti_router_name }}
+  ansible.builtin.command:
+    cmd: >-
+      ziti edge create edge-router {{ ziti_router_name }}
+      --jwt-output-file /tmp/{{ ziti_router_name }}.jwt
+      --tunneler-enabled
+  register: create_router
+  changed_when: "'created' in create_router.stdout"
+  failed_when: create_router.rc != 0
+
+- name: Read router JWT
+  ansible.builtin.slurp:
+    src: "/tmp/{{ ziti_router_name }}.jwt"
+  register: router_jwt_file
+
+- name: Set router enrollment token fact
+  ansible.builtin.set_fact:
+    ziti_enroll_token: "{{ router_jwt_file.content | b64decode | trim }}"

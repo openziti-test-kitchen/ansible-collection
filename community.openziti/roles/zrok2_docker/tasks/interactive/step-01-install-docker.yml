@@ -1,0 +1,7 @@
+---
+# interactive step 1: install-docker
+# TODO: implement
+
+- name: "interactive step 1: install-docker (placeholder)"
+  ansible.builtin.debug:
+    msg: "Not yet implemented"

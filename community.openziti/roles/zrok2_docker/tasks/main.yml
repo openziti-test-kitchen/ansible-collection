@@ -1,0 +1,8 @@
+---
+# zrok2_docker - Phase 5: Docker Share Guide
+# Mirrors: zrok docs/how-tos/docker-share/index.mdx
+# TODO: implement dispatch between interactive and self-contained approaches
+
+- name: Docker share (placeholder)
+  ansible.builtin.debug:
+    msg: "Phase 5 not yet implemented"

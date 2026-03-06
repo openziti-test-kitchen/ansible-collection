@@ -1,0 +1,46 @@
+---
+# zrok2_server - Phase 3: zrok2 Server Deployment
+#
+# Mirrors: zrok docs/self-hosting/linux/index.mdx
+
+- name: Install zrok2 packages
+  ansible.builtin.include_tasks: step-01-install.yml
+
+- name: Set environment variables
+  ansible.builtin.include_tasks: step-02-env.yml
+
+- name: Run zrok2-bootstrap.bash
+  ansible.builtin.include_tasks: step-03-bootstrap.yml
+
+- name: Verify RabbitMQ
+  ansible.builtin.include_tasks: step-04-verify-rabbitmq.yml
+
+- name: Verify database
+  ansible.builtin.include_tasks: step-05-verify-database.yml
+
+- name: Verify InfluxDB
+  ansible.builtin.include_tasks: step-06-verify-influxdb.yml
+
+- name: Verify ctrl.yml config
+  ansible.builtin.include_tasks: step-07-verify-config.yml
+
+- name: Verify admin bootstrap
+  ansible.builtin.include_tasks: step-08-verify-bootstrap.yml
+
+- name: Verify dynamic frontend
+  ansible.builtin.include_tasks: step-09-verify-frontend.yml
+
+- name: Verify proxy identity
+  ansible.builtin.include_tasks: step-10-verify-proxy-identity.yml
+
+- name: Verify namespace
+  ansible.builtin.include_tasks: step-11-verify-namespace.yml
+
+- name: Verify frontend config
+  ansible.builtin.include_tasks: step-12-verify-frontend-config.yml
+
+- name: Verify services
+  ansible.builtin.include_tasks: step-13-verify-services.yml
+
+- name: Verify metrics pipeline
+  ansible.builtin.include_tasks: step-14-verify-metrics.yml

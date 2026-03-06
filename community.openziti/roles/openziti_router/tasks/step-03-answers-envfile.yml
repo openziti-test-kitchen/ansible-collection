@@ -1,0 +1,21 @@
+---
+# Step 3: Supply router answers via env file
+# Ansible: copy/template to bootstrap.env, then run bootstrap normally
+
+- name: "Record input method: env file template"
+  ansible.builtin.debug:
+    msg: >-
+      Supplying router answers via pre-populated bootstrap.env
+      for {{ ziti_router_name }}
+
+- name: Write router bootstrap.env
+  ansible.builtin.copy:
+    dest: "{{ ziti_router_etc_dir }}/bootstrap.env"
+    owner: root
+    group: root
+    mode: "0600"
+    content: |
+      ZITI_BOOTSTRAP=true
+      ZITI_ENROLL_TOKEN={{ ziti_enroll_token }}
+      ZITI_ROUTER_ADVERTISED_ADDRESS={{ ziti_router_address }}
+      ZITI_ROUTER_PORT={{ ziti_router_port }}

@@ -1,0 +1,12 @@
+---
+# Step 6: Verify router is online
+# Doc: "Verify the router is online"
+
+- name: Verify router {{ ziti_router_name }} is online
+  ansible.builtin.command:
+    cmd: ziti edge list edge-routers 'name="{{ ziti_router_name }}"'
+  register: router_list
+  retries: 30
+  delay: 2
+  until: "'true' in router_list.stdout"
+  changed_when: false

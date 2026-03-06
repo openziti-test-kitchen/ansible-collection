@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  role_name: zrok2_agent
+  author: NetFoundry
+  description: Set up zrok2 admin account and agent service.
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Ubuntu
+      versions: [noble]
+    - name: EL
+      versions: ["10"]
+  galaxy_tags: [zrok, openziti]
+dependencies: []

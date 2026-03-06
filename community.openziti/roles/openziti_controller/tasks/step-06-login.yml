@@ -1,0 +1,17 @@
+---
+# Step 6: Log in with ziti edge login
+# Doc: "Log in to the controller"
+
+- name: Log in to controller
+  ansible.builtin.command:
+    cmd: >-
+      ziti edge login
+      https://{{ ziti_ctrl_address }}:{{ ziti_ctrl_port }}
+      --username {{ ziti_admin_user }}
+      --password {{ ziti_admin_password }}
+      --yes
+  register: ziti_login
+  retries: 5
+  delay: 3
+  until: ziti_login.rc == 0
+  changed_when: false

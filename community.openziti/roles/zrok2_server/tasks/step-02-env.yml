@@ -1,0 +1,46 @@
+---
+# Step 2: Set environment variables for the bootstrap script
+# Doc: "Automated Bootstrap" section — required env vars
+# These are passed to step-03-bootstrap.yml via the environment: dict
+
+- name: Generate ZROK2_ADMIN_TOKEN if not provided
+  when: zrok2_admin_token | length == 0
+  ansible.builtin.set_fact:
+    zrok2_admin_token: >-
+      {{ lookup('community.general.random_string', length=32,
+         override_special='', override_all='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-')
+      }}
+
+- name: Generate ZROK2_DB_PASSWORD if not provided (postgres)
+  when:
+    - zrok2_store_type == 'postgres'
+    - zrok2_db_password | length == 0
+  ansible.builtin.set_fact:
+    zrok2_db_password: >-
+      {{ lookup('community.general.random_string', length=32,
+         override_special='', override_all='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
+      }}
+
+- name: Generate ZROK2_INFLUX_TOKEN if not provided
+  when: zrok2_influx_token | length == 0
+  ansible.builtin.set_fact:
+    zrok2_influx_token: >-
+      {{ lookup('community.general.random_string', length=64,
+         override_special='', override_all='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
+      }}
+
+- name: Compute zrok2 API endpoint
+  ansible.builtin.set_fact:
+    zrok2_api_endpoint: >-
+      {{ 'https://' ~ zrok2_dns_zone ~ ':' ~ zrok2_ctrl_port
+         if zrok2_tls_cert | length > 0
+         else 'http://127.0.0.1:' ~ zrok2_ctrl_port }}
+
+- name: Display bootstrap configuration
+  ansible.builtin.debug:
+    msg: |
+      ZROK2_DNS_ZONE={{ zrok2_dns_zone }}
+      ZROK2_API_ENDPOINT={{ zrok2_api_endpoint }}
+      ZROK2_STORE_TYPE={{ zrok2_store_type }}
+      ZROK2_CTRL_PORT={{ zrok2_ctrl_port }}
+      ZITI_API_ENDPOINT=https://{{ ziti_ctrl_address }}:{{ ziti_ctrl_port }}

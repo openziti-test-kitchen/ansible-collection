@@ -1,0 +1,17 @@
+---
+# openziti_router - Phase 2: Ziti Router Linux Deployment
+#
+# Mirrors: ziti-doc 10-linux/20-router/10-deploy.mdx
+#
+# Validates all 4 bootstrap input methods in a loop, retaining the last
+# iteration for subsequent phases (zrok play).
+
+- name: Install the router package
+  ansible.builtin.include_tasks: step-02-install.yml
+
+- name: Validate each router bootstrap input method
+  ansible.builtin.include_tasks: validate-router-method.yml
+  loop: "{{ ziti_input_methods }}"
+  loop_control:
+    loop_var: input_method
+    index_var: method_index

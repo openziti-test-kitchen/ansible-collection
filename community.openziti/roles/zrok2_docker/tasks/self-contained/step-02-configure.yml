@@ -1,0 +1,7 @@
+---
+# self-contained step 2: configure
+# TODO: implement
+
+- name: "self-contained step 2: configure (placeholder)"
+  ansible.builtin.debug:
+    msg: "Not yet implemented"

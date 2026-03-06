@@ -1,0 +1,7 @@
+---
+# Step 1: create-account
+# TODO: implement
+
+- name: "Step 1: create-account (placeholder)"
+  ansible.builtin.debug:
+    msg: "Step 1 create-account — not yet implemented"

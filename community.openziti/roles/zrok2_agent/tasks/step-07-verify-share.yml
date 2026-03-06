@@ -1,0 +1,7 @@
+---
+# Step 7: verify-share
+# TODO: implement
+
+- name: "Step 7: verify-share (placeholder)"
+  ansible.builtin.debug:
+    msg: "Step 7 verify-share — not yet implemented"

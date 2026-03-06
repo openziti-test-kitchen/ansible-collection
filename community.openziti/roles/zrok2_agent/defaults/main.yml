@@ -1,0 +1,4 @@
+---
+# zrok2_agent defaults
+zrok2_api_endpoint: ""
+zrok2_admin_token: ""

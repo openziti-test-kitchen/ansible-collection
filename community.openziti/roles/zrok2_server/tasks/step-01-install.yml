@@ -1,0 +1,13 @@
+---
+# Step 1: Install zrok2 packages
+# Doc: "Install zrok" section
+# Bootstrap script prerequisite: packages must be installed before running
+
+- name: Install zrok2 packages
+  ansible.builtin.package:
+    name:
+      - zrok2
+      - zrok2-controller
+      - zrok2-frontend
+      - zrok2-metrics
+    state: present

@@ -1,0 +1,40 @@
+---
+# Step 3: Run zrok2-bootstrap.bash
+# Doc: "Automated Bootstrap" section
+# The bootstrap script is idempotent and safe to re-run.
+# It handles: RabbitMQ, PostgreSQL/SQLite3, InfluxDB, ctrl.yml, admin bootstrap,
+# dynamic frontend, dynamicProxyController identity, namespace, frontend.yml,
+# TLS permissions, systemd overrides, and service startup.
+
+- name: Ensure ziti CLI is authenticated for bootstrap
+  ansible.builtin.command:
+    cmd: >-
+      ziti edge login
+      https://{{ ziti_ctrl_address }}:{{ ziti_ctrl_port }}
+      --username {{ ziti_admin_user }}
+      --password {{ ziti_admin_password }}
+      --yes
+  changed_when: false
+
+- name: Run zrok2-bootstrap.bash
+  ansible.builtin.command:
+    cmd: /usr/share/zrok/nfpm/zrok2-bootstrap.bash
+  environment:
+    ZROK2_DNS_ZONE: "{{ zrok2_dns_zone }}"
+    ZROK2_ADMIN_TOKEN: "{{ zrok2_admin_token }}"
+    ZITI_API_ENDPOINT: "https://{{ ziti_ctrl_address }}:{{ ziti_ctrl_port }}"
+    ZITI_ADMIN_USER: "{{ ziti_admin_user }}"
+    ZITI_ADMIN_PASSWORD: "{{ ziti_admin_password }}"
+    ZROK2_CTRL_PORT: "{{ zrok2_ctrl_port | string }}"
+    ZROK2_STORE_TYPE: "{{ zrok2_store_type }}"
+    ZROK2_DB_PASSWORD: "{{ zrok2_db_password }}"
+    ZROK2_INFLUX_TOKEN: "{{ zrok2_influx_token }}"
+    ZROK2_TLS_CERT: "{{ zrok2_tls_cert }}"
+    ZROK2_TLS_KEY: "{{ zrok2_tls_key }}"
+  register: bootstrap_result
+  changed_when: "'Bootstrap Complete' in bootstrap_result.stdout"
+
+- name: Show bootstrap output
+  ansible.builtin.debug:
+    var: bootstrap_result.stdout_lines
+  when: bootstrap_result.stdout_lines | length > 0

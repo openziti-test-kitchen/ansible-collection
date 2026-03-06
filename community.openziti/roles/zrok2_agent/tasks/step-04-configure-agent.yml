@@ -1,0 +1,7 @@
+---
+# Step 4: configure-agent
+# TODO: implement
+
+- name: "Step 4: configure-agent (placeholder)"
+  ansible.builtin.debug:
+    msg: "Step 4 configure-agent — not yet implemented"

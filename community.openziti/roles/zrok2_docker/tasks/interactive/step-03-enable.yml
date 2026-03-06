@@ -1,0 +1,7 @@
+---
+# interactive step 3: enable
+# TODO: implement
+
+- name: "interactive step 3: enable (placeholder)"
+  ansible.builtin.debug:
+    msg: "Not yet implemented"

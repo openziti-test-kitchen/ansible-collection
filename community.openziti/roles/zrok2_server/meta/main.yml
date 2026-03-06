@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  role_name: zrok2_server
+  author: NetFoundry
+  description: >-
+    Deploy and bootstrap a zrok2 server instance with controller, frontend,
+    and metrics services.
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble
+    - name: EL
+      versions:
+        - "10"
+  galaxy_tags:
+    - zrok
+    - openziti
+    - zero_trust
+dependencies: []

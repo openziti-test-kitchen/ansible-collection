@@ -1,0 +1,18 @@
+---
+# Step 2: Supply bootstrap answers via interactive TTY prompts
+# Doc: "Run the bootstrap script" (interactive mode)
+#
+# Ansible module: ansible.builtin.expect (requires pexpect on target)
+# Prompt strings are extracted from bootstrap.bash source.
+
+- name: "Record input method: interactive prompts"
+  ansible.builtin.debug:
+    msg: >-
+      Supplying controller answers via interactive TTY prompts (expect)
+      for {{ ziti_cluster_node_name }}
+
+- name: Ensure pexpect is installed
+  ansible.builtin.package:
+    name: "{{ 'python3-pexpect' if ansible_os_family == 'Debian'
+              else 'python3-pexpect' }}"
+    state: present

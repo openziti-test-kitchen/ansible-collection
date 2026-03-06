@@ -1,0 +1,13 @@
+---
+# Step 2: Supply bootstrap answers via parent environment
+# Doc: "Bootstrap without prompts" — export ZITI_* vars, close stdin
+#
+# Ansible module: command with environment: dict
+# The environment vars are passed to bootstrap.bash via sudo -E equivalent.
+# Stdin is closed by providing empty stdin.
+
+- name: "Record input method: parent environment"
+  ansible.builtin.debug:
+    msg: >-
+      Supplying controller answers via parent environment variables
+      for {{ ziti_cluster_node_name }}

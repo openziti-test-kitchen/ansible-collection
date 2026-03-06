@@ -1,0 +1,10 @@
+---
+# Step 1: Install the openziti-controller package
+# Doc: "Install the controller package"
+
+- name: Install openziti-controller package
+  ansible.builtin.package:
+    name:
+      - openziti
+      - openziti-controller
+    state: present

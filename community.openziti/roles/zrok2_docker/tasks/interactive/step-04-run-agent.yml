@@ -1,0 +1,7 @@
+---
+# interactive step 4: run-agent
+# TODO: implement
+
+- name: "interactive step 4: run-agent (placeholder)"
+  ansible.builtin.debug:
+    msg: "Not yet implemented"

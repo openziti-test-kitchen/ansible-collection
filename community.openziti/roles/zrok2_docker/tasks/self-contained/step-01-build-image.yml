@@ -1,0 +1,7 @@
+---
+# self-contained step 1: build-image
+# TODO: implement
+
+- name: "self-contained step 1: build-image (placeholder)"
+  ansible.builtin.debug:
+    msg: "Not yet implemented"

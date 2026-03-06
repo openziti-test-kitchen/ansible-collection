@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  role_name: openziti_controller
+  author: NetFoundry
+  description: >-
+    Deploy and bootstrap an OpenZiti controller, testing all documented input
+    methods (parent env, stdin, interactive prompts, env file) and verifying
+    each produces a valid configuration.
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble
+    - name: EL
+      versions:
+        - "10"
+  galaxy_tags:
+    - openziti
+    - zero_trust
+    - networking
+dependencies:
+  - role: openziti_repo

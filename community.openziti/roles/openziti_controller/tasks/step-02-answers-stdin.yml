@@ -1,0 +1,23 @@
+---
+# Step 2: Supply bootstrap answers via stdin pipe
+# Doc: pipe ZITI_KEY=value lines to bootstrap.bash
+#
+# Ansible module: command with stdin: parameter
+
+- name: "Record input method: stdin pipe"
+  ansible.builtin.debug:
+    msg: >-
+      Supplying controller answers via stdin pipe
+      for {{ ziti_cluster_node_name }}
+
+- name: Prepare stdin payload for controller bootstrap
+  ansible.builtin.set_fact:
+    ziti_controller_stdin_payload: |
+      ZITI_BOOTSTRAP=true
+      ZITI_BOOTSTRAP_CLUSTER=true
+      ZITI_CLUSTER_NODE_NAME={{ ziti_cluster_node_name }}
+      ZITI_CLUSTER_TRUST_DOMAIN={{ ziti_cluster_trust_domain }}
+      ZITI_CTRL_ADVERTISED_ADDRESS={{ ziti_ctrl_address }}
+      ZITI_CTRL_ADVERTISED_PORT={{ ziti_ctrl_port }}
+      ZITI_USER={{ ziti_admin_user }}
+      ZITI_PWD={{ ziti_admin_password }}

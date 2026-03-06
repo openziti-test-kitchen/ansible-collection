@@ -1,0 +1,7 @@
+---
+# Step 2: enable
+# TODO: implement
+
+- name: "Step 2: enable (placeholder)"
+  ansible.builtin.debug:
+    msg: "Step 2 enable — not yet implemented"

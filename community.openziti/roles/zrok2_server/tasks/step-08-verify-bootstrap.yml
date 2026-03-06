@@ -1,0 +1,33 @@
+---
+# Step 8: Verify zrok2 admin bootstrap succeeded
+# Doc: "Bootstrap OpenZiti for zrok"
+# Bootstrap script: step_bootstrap()
+# Checks: database populated, Ziti identities created, policies created
+
+- name: Verify zrok2 database tables exist (postgres)
+  when: zrok2_store_type == 'postgres'
+  ansible.builtin.command:
+    cmd: >-
+      sudo -u postgres psql -tAc
+      "SELECT count(*) FROM information_schema.tables
+       WHERE table_schema='public'"
+      zrok2
+  register: table_count
+  changed_when: false
+  failed_when: (table_count.stdout | int) < 1
+
+- name: Verify ctrl Ziti identity exists
+  ansible.builtin.command:
+    cmd: ziti edge list identities 'name="ctrl"' -j
+  register: ctrl_identity
+  changed_when: false
+  failed_when: >-
+    (ctrl_identity.stdout | from_json).data | length == 0
+
+- name: Verify public Ziti identity exists
+  ansible.builtin.command:
+    cmd: ziti edge list identities 'name="public"' -j
+  register: public_identity
+  changed_when: false
+  failed_when: >-
+    (public_identity.stdout | from_json).data | length == 0

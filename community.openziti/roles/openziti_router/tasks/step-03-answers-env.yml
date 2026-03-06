@@ -1,0 +1,9 @@
+---
+# Step 3: Supply router answers via parent environment
+# Ansible: command with environment: dict, stdin closed
+
+- name: "Record input method: parent environment"
+  ansible.builtin.debug:
+    msg: >-
+      Supplying router answers via parent environment variables
+      for {{ ziti_router_name }}

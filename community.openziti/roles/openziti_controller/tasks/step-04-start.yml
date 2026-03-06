@@ -1,0 +1,10 @@
+---
+# Step 4: Enable and start ziti-controller.service
+# Doc: "Enable and start the controller"
+
+- name: Enable and start ziti-controller service
+  ansible.builtin.systemd:
+    name: ziti-controller
+    state: started
+    enabled: true
+    daemon_reload: true

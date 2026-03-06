@@ -1,0 +1,25 @@
+---
+# Step 4: Verify RabbitMQ is running (localhost-bound)
+# Doc: "Install Dependencies" — RabbitMQ section
+# Bootstrap script: step_rabbitmq()
+
+- name: Verify rabbitmq-server is active
+  ansible.builtin.systemd:
+    name: rabbitmq-server
+    state: started
+  check_mode: true
+  register: rabbitmq_status
+  failed_when: rabbitmq_status.status.ActiveState != 'active'
+
+- name: Verify RabbitMQ is responsive
+  ansible.builtin.command:
+    cmd: rabbitmqctl status
+  register: rabbitmq_ctl
+  changed_when: false
+  failed_when: rabbitmq_ctl.rc != 0
+
+- name: Verify RabbitMQ AMQP listener on 127.0.0.1:5672
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 5672
+    timeout: 10
