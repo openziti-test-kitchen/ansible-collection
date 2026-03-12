@@ -28,3 +28,6 @@ ziti_ctrl_address: ""
 ziti_ctrl_port: 1280
 ziti_admin_user: admin
 ziti_admin_password: ""
+
+# Directory containing pre-built zrok2 .deb/.rpm packages
+zrok2_package_dir: /srv/zrok/dist

@@ -2,8 +2,48 @@
 # Step 3: Install zrok2-agent package
 # Doc: linux-service.mdx "Install the package"
 # The zrok2-agent package provides the systemd user service unit
+#
 
-- name: Install zrok2-agent package
-  ansible.builtin.package:
-    name: zrok2-agent
-    state: present
+- name: Install zrok2-agent from local .deb (Debian)
+  when: ansible_os_family == "Debian"
+  block:
+    - name: Discover zrok2-agent .deb in {{ zrok2_package_dir }}
+      ansible.builtin.find:
+        paths: "{{ zrok2_package_dir }}"
+        patterns:
+          - "zrok2-agent_*_all.deb"
+      register: zrok2_agent_debs
+
+    - name: Verify zrok2-agent .deb found
+      ansible.builtin.assert:
+        that:
+          - zrok2_agent_debs.files | length >= 1
+        fail_msg: >-
+          No zrok2-agent .deb found in {{ zrok2_package_dir }}
+
+    - name: Install zrok2-agent package
+      ansible.builtin.apt:
+        deb: "{{ zrok2_agent_debs.files[0].path }}"
+
+- name: Install zrok2-agent from local .rpm (RedHat)
+  when: ansible_os_family == "RedHat"
+  block:
+    - name: Discover zrok2-agent .rpm in {{ zrok2_package_dir }}
+      ansible.builtin.find:
+        paths: "{{ zrok2_package_dir }}"
+        patterns:
+          - "zrok2-agent-*.rpm"
+      register: zrok2_agent_rpms
+
+    - name: Verify zrok2-agent .rpm found
+      ansible.builtin.assert:
+        that:
+          - zrok2_agent_rpms.files | length >= 1
+        fail_msg: >-
+          No zrok2-agent .rpm found in {{ zrok2_package_dir }}
+
+    - name: Install zrok2-agent package
+      ansible.builtin.dnf:
+        name: "{{ zrok2_agent_rpms.files[0].path }}"
+        state: present
+        disable_gpg_check: true

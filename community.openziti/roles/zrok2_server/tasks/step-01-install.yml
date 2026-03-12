@@ -2,12 +2,56 @@
 # Step 1: Install zrok2 packages
 # Doc: "Install zrok" section
 # Bootstrap script prerequisite: packages must be installed before running
+#
 
-- name: Install zrok2 packages
-  ansible.builtin.package:
-    name:
-      - zrok2
-      - zrok2-controller
-      - zrok2-frontend
-      - zrok2-metrics
-    state: present
+- name: Find zrok2 .deb packages (Debian)
+  when: ansible_os_family == "Debian"
+  block:
+    - name: Discover zrok2 .deb files in {{ zrok2_package_dir }}
+      ansible.builtin.find:
+        paths: "{{ zrok2_package_dir }}"
+        patterns:
+          - "zrok2_*_amd64.deb"
+          - "zrok2-controller_*_all.deb"
+          - "zrok2-frontend_*_all.deb"
+          - "zrok2-metrics_*_all.deb"
+      register: zrok2_debs
+
+    - name: Verify all 4 zrok2 .deb packages found
+      ansible.builtin.assert:
+        that:
+          - zrok2_debs.files | length >= 4
+        fail_msg: >-
+          Expected 4 zrok2 .deb packages in {{ zrok2_package_dir }}, found
+          {{ zrok2_debs.files | length }}: {{ zrok2_debs.files | map(attribute='path') | list }}
+
+    - name: Install zrok2 packages from local .deb files
+      ansible.builtin.apt:
+        deb: "{{ item }}"
+      loop: "{{ zrok2_debs.files | map(attribute='path') | sort }}"
+
+- name: Find zrok2 .rpm packages (RedHat)
+  when: ansible_os_family == "RedHat"
+  block:
+    - name: Discover zrok2 .rpm files in {{ zrok2_package_dir }}
+      ansible.builtin.find:
+        paths: "{{ zrok2_package_dir }}"
+        patterns:
+          - "zrok2-*.rpm"
+        excludes:
+          - "zrok2-agent-*.rpm"
+      register: zrok2_rpms
+
+    - name: Verify zrok2 .rpm packages found
+      ansible.builtin.assert:
+        that:
+          - zrok2_rpms.files | length >= 4
+        fail_msg: >-
+          Expected 4 zrok2 .rpm packages in {{ zrok2_package_dir }}, found
+          {{ zrok2_rpms.files | length }}: {{ zrok2_rpms.files | map(attribute='path') | list }}
+
+    - name: Install zrok2 packages from local .rpm files
+      ansible.builtin.dnf:
+        name: "{{ zrok2_rpms.files | map(attribute='path') | sort }}"
+        state: present
+        disable_gpg_check: true

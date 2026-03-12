@@ -20,3 +20,6 @@ zrok2_agent_user: "{{ ansible_user }}"
 # Share configuration for verification
 zrok2_share_backend: "http://localhost:8080"
 zrok2_share_name: ""
+
+# Directory containing pre-built zrok2 .deb/.rpm packages
+zrok2_package_dir: /srv/zrok/dist
