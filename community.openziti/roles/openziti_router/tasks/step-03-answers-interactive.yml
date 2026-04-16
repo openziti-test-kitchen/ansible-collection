@@ -1,0 +1,14 @@
+---
+# Step 3: Supply router answers via interactive TTY prompts
+# Ansible: ansible.builtin.expect with prompt matching
+
+- name: "Record input method: interactive prompts"
+  ansible.builtin.debug:
+    msg: >-
+      Supplying router answers via interactive TTY prompts (expect)
+      for {{ ziti_router_name }}
+
+- name: Ensure pexpect is installed
+  ansible.builtin.package:
+    name: python3-pexpect
+    state: present

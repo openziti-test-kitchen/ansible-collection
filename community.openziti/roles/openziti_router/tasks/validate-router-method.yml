@@ -1,0 +1,53 @@
+---
+# Validate a single router bootstrap input method.
+# Called in a loop by main.yml with loop_var: input_method, index_var: method_index.
+# Nukes state after each iteration except the last.
+
+- name: "Set router identity for iteration {{ method_index + 1 }}"
+  ansible.builtin.set_fact:
+    ziti_router_name: "router{{ method_index + 1 }}"
+    ziti_router_address: >-
+      router{{ method_index + 1 }}.{{ ansible_default_ipv4.address }}.sslip.io
+
+- name: Create edge router in controller
+  ansible.builtin.include_tasks: step-01-create.yml
+
+- name: "Supply answers via {{ input_method }} method"
+  ansible.builtin.include_tasks: "step-03-answers-{{ input_method }}.yml"
+
+- name: Run bootstrap (enroll + config)
+  ansible.builtin.include_tasks: step-04-bootstrap.yml
+
+- name: Enable and start router
+  ansible.builtin.include_tasks: step-05-start.yml
+
+- name: Verify router is online
+  ansible.builtin.include_tasks: step-06-verify.yml
+
+# Tear down for all but the last iteration
+- name: "Tear down router{{ method_index + 1 }} (not final)"
+  when: method_index < (ziti_input_methods | length - 1)
+  block:
+    - name: Stop router service
+      ansible.builtin.systemd:
+        name: ziti-router
+        state: stopped
+        enabled: false
+
+    - name: Remove router state directory
+      ansible.builtin.file:
+        path: "{{ ziti_router_state_dir }}"
+        state: absent
+
+    - name: Remove router bootstrap answer files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ ziti_router_etc_dir }}/bootstrap.env"
+        - "{{ ziti_router_etc_dir }}/service.env"
+
+    - name: Delete router from controller
+      ansible.builtin.command:
+        cmd: "ziti edge delete edge-router {{ ziti_router_name }}"
+      changed_when: true

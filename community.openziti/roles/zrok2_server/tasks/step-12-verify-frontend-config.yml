@@ -1,0 +1,43 @@
+---
+# Step 12: Verify frontend.yml was generated
+# Doc: "Configure the Dynamic Frontend"
+# Bootstrap script: step_frontend_config()
+
+- name: Verify frontend.yml exists
+  ansible.builtin.stat:
+    path: /etc/zrok2/frontend.yml
+  register: frontend_yml
+  failed_when: not frontend_yml.stat.exists
+
+- name: Verify frontend.yml is owned by zrok2-frontend
+  ansible.builtin.assert:
+    that:
+      - frontend_yml.stat.pw_name == 'zrok2-frontend'
+      - frontend_yml.stat.gr_name == 'zrok2-frontend'
+    fail_msg: >-
+      frontend.yml ownership is {{ frontend_yml.stat.pw_name }}:{{ frontend_yml.stat.gr_name }},
+      expected zrok2-frontend:zrok2-frontend
+
+- name: Verify frontend.yml permissions (640)
+  ansible.builtin.assert:
+    that:
+      - frontend_yml.stat.mode == '0640'
+    fail_msg: "frontend.yml mode is {{ frontend_yml.stat.mode }}, expected 0640"
+
+- name: Verify frontend.yml contains required sections
+  ansible.builtin.command:
+    cmd: grep -c '{{ item }}' /etc/zrok2/frontend.yml
+  loop:
+    - "frontend_token:"
+    - "identity:"
+    - "bind_address:"
+    - "amqp_subscriber:"
+    - "controller:"
+    - "host_match:"
+  changed_when: false
+
+- name: Verify public frontend identity file exists
+  ansible.builtin.stat:
+    path: /var/lib/zrok2-frontend/.zrok2/identities/public.json
+  register: fe_identity
+  failed_when: not fe_identity.stat.exists

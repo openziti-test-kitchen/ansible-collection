@@ -1,0 +1,36 @@
+---
+# Interactive step 3: Enable environment on the host
+# Doc: "Enable the Environment on the Host"
+# The bind-mount approach requires the host to have an enabled zrok2 environment
+
+- name: Check if zrok2 environment is already enabled
+  ansible.builtin.command:
+    cmd: zrok2 status
+  become: true
+  become_user: "{{ zrok2_agent_user }}"
+  register: zrok2_status
+  changed_when: false
+  failed_when: false
+
+- name: Environment already enabled
+  when: zrok2_status.rc == 0
+  ansible.builtin.debug:
+    msg: "zrok2 environment is already enabled on the host"
+
+- name: Enable environment if not already done
+  when: zrok2_status.rc != 0
+  block:
+    - name: Set zrok2 API endpoint
+      when: zrok2_api_endpoint | length > 0
+      ansible.builtin.command:
+        cmd: "zrok2 config set apiEndpoint {{ zrok2_api_endpoint }}"
+      become: true
+      become_user: "{{ zrok2_agent_user }}"
+      changed_when: true
+
+    - name: Enable zrok2 environment
+      ansible.builtin.command:
+        cmd: "zrok2 enable {{ zrok2_account_token }}"
+      become: true
+      become_user: "{{ zrok2_agent_user }}"
+      changed_when: true

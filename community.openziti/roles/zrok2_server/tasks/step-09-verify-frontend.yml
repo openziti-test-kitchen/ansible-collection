@@ -1,0 +1,22 @@
+---
+# Step 9: Verify dynamic frontend was created
+# Doc: "Create a Dynamic Frontend"
+# Bootstrap script: step_create_frontend()
+
+- name: List zrok2 frontends
+  ansible.builtin.command:
+    cmd: zrok2 admin list frontends
+  environment:
+    ZROK2_API_ENDPOINT: "{{ zrok2_api_endpoint }}"
+    ZROK2_ADMIN_TOKEN: "{{ zrok2_admin_token }}"
+  register: frontend_list
+  changed_when: false
+  retries: 10
+  delay: 3
+  until: frontend_list.rc == 0
+
+- name: Verify public frontend exists
+  ansible.builtin.assert:
+    that:
+      - "'public' in frontend_list.stdout"
+    fail_msg: "No 'public' frontend found in: {{ frontend_list.stdout }}"

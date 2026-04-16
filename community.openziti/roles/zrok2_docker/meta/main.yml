@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  role_name: zrok2_docker
+  author: NetFoundry
+  description: Docker-based zrok2 share deployment.
+  license: Apache-2.0
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Ubuntu
+      versions: [noble]
+    - name: EL
+      versions: ["10"]
+  galaxy_tags: [zrok, docker, openziti]
+dependencies: []

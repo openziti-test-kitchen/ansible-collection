@@ -1,0 +1,28 @@
+---
+# openziti_router defaults
+
+# Input methods to validate (last one is retained for subsequent phases)
+ziti_input_methods:
+  - env
+  - stdin
+  - interactive
+  - envfile
+
+# Router identity
+ziti_router_name: router1
+ziti_router_address: "{{ ziti_router_name }}.{{ ansible_default_ipv4.address }}.sslip.io"
+ziti_router_port: 3022
+
+# Controller connection (set by openziti_controller role or playbook vars)
+ziti_ctrl_address: ""
+ziti_ctrl_port: 1280
+ziti_admin_user: admin
+ziti_admin_password: ""
+
+# Bootstrap control flags
+ziti_bootstrap: true
+ziti_bootstrap_enrollment: true
+
+# State directories
+ziti_router_state_dir: /var/lib/private/ziti-router
+ziti_router_etc_dir: /opt/openziti/etc/router

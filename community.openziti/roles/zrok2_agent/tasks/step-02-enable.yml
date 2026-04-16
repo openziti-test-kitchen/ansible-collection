@@ -1,0 +1,38 @@
+---
+# Step 2: Enable environment
+# Doc: "Enable Your Environment" section of self-hosting Linux guide
+# Commands:
+#   zrok2 config set apiEndpoint <endpoint>
+#   zrok2 enable <account-token>
+#   zrok2 config set defaultNamespace public
+
+- name: Set zrok2 API endpoint for agent user
+  ansible.builtin.command:
+    cmd: "zrok2 config set apiEndpoint {{ zrok2_api_endpoint }}"
+  become: true
+  become_user: "{{ zrok2_agent_user }}"
+  changed_when: true
+
+- name: Enable zrok2 environment
+  ansible.builtin.command:
+    cmd: "zrok2 enable {{ zrok2_account_token }}"
+  become: true
+  become_user: "{{ zrok2_agent_user }}"
+  register: enable_result
+  changed_when: enable_result.rc == 0
+
+- name: Set default namespace
+  ansible.builtin.command:
+    cmd: "zrok2 config set defaultNamespace {{ zrok2_default_namespace }}"
+  become: true
+  become_user: "{{ zrok2_agent_user }}"
+  changed_when: true
+
+- name: Verify environment is enabled
+  ansible.builtin.command:
+    cmd: zrok2 status
+  become: true
+  become_user: "{{ zrok2_agent_user }}"
+  register: zrok2_status
+  changed_when: false
+  failed_when: zrok2_status.rc != 0

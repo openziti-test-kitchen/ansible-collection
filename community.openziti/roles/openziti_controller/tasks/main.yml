@@ -1,0 +1,17 @@
+---
+# openziti_controller - Phase 1: Ziti Controller Linux Deployment
+#
+# Mirrors: ziti-doc 10-linux/10-controller/10-deploy.mdx
+#
+# Validates all 4 bootstrap input methods in a loop, retaining the last
+# iteration for subsequent phases (router enrollment, zrok play).
+
+- name: Install the controller package
+  ansible.builtin.include_tasks: step-01-install.yml
+
+- name: Validate each controller bootstrap input method
+  ansible.builtin.include_tasks: validate-controller-method.yml
+  loop: "{{ ziti_input_methods }}"
+  loop_control:
+    loop_var: input_method
+    index_var: method_index

@@ -1,0 +1,42 @@
+---
+# Step 10: Verify dynamicProxyController identity and Ziti resources
+# Doc: "Create dynamicProxyController Identity and Ziti Resources"
+# Bootstrap script: step_dynamic_proxy_controller()
+
+- name: Verify dynamicProxyController identity file exists
+  ansible.builtin.stat:
+    path: /var/lib/zrok2-controller/.zrok2/identities/dynamicProxyController.json
+  register: dpc_identity
+  failed_when: not dpc_identity.stat.exists
+
+- name: Verify dynamicProxyController Ziti identity exists
+  ansible.builtin.command:
+    cmd: ziti edge list identities 'name="dynamicProxyController"' -j
+  register: dpc_ziti
+  changed_when: false
+  failed_when: >-
+    (dpc_ziti.stdout | from_json).data | length == 0
+
+- name: Verify dynamicProxyController Ziti service exists
+  ansible.builtin.command:
+    cmd: ziti edge list services 'name="dynamicProxyController"' -j
+  register: dpc_service
+  changed_when: false
+  failed_when: >-
+    (dpc_service.stdout | from_json).data | length == 0
+
+- name: Verify dynamicProxyController bind policy exists
+  ansible.builtin.command:
+    cmd: ziti edge list service-policies 'name="dynamicProxyController-bind"' -j
+  register: dpc_bind
+  changed_when: false
+  failed_when: >-
+    (dpc_bind.stdout | from_json).data | length == 0
+
+- name: Verify dynamicProxyController dial policy exists
+  ansible.builtin.command:
+    cmd: ziti edge list service-policies 'name="dynamicProxyController-dial"' -j
+  register: dpc_dial
+  changed_when: false
+  failed_when: >-
+    (dpc_dial.stdout | from_json).data | length == 0

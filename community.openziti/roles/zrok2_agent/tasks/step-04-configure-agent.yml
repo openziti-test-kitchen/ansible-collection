@@ -1,0 +1,9 @@
+---
+# Step 4: Configure zrok2-agent systemd user unit
+# Doc: linux-service.mdx "Enable your account" + "Start the service"
+# The agent runs as a systemd --user service, so linger must be enabled
+
+- name: Enable lingering for agent user
+  ansible.builtin.command:
+    cmd: "loginctl enable-linger {{ zrok2_agent_user }}"
+  changed_when: true

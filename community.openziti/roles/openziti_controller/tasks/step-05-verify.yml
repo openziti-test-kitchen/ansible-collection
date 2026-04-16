@@ -1,0 +1,13 @@
+---
+# Step 5: Verify controller is listening
+# Doc: "Verify the controller is running"
+
+- name: Wait for controller to be listening
+  ansible.builtin.uri:
+    url: "https://{{ ziti_ctrl_address }}:{{ ziti_ctrl_port }}/edge/client/v1/version"
+    validate_certs: false
+    status_code: 200
+  register: ctrl_version
+  retries: 30
+  delay: 2
+  until: ctrl_version.status == 200

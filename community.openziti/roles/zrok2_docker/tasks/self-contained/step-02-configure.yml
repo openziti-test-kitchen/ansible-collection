@@ -1,0 +1,75 @@
+---
+# Self-contained step 2: Write compose.yml and .env
+# Doc: "Self-Contained Approach" compose.yml + .env
+
+- name: Create compose project directory
+  ansible.builtin.file:
+    path: "{{ zrok2_compose_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Write self-contained compose.yml
+  ansible.builtin.copy:
+    dest: "{{ zrok2_compose_dir }}/compose.yml"
+    mode: "0644"
+    content: |
+      services:
+        zrok-init:
+          image: busybox
+          command: chown -Rc 2171:2171 /mnt/
+          user: root
+          volumes:
+            - zrok_env:/mnt
+
+        zrok-enable:
+          image: {{ zrok2_docker_image }}
+          depends_on:
+            zrok-init:
+              condition: service_completed_successfully
+          entrypoint: zrok2-enable
+          environment:
+            HOME: /mnt
+            ZROK2_ENABLE_TOKEN: ${ZROK2_ENABLE_TOKEN}
+            ZROK2_API_ENDPOINT: ${ZROK2_API_ENDPOINT:-}
+          volumes:
+            - zrok_env:/mnt
+
+        zrok-agent:
+          image: {{ zrok2_docker_image }}
+          restart: unless-stopped
+          depends_on:
+            zrok-enable:
+              condition: service_completed_successfully
+          environment:
+            HOME: /mnt
+          entrypoint:
+            - bash
+            - -c
+            - rm -f /mnt/.zrok2/agent.socket && exec "$@"
+          command:
+            - --
+            - zrok2
+            - agent
+            - start
+            - --console-address
+            - 0.0.0.0
+            - --console-start-port
+            - "${ZROK2_AGENT_CONSOLE_PORT:-{{ zrok2_agent_console_port }}}"
+          expose:
+            - "${ZROK2_AGENT_CONSOLE_PORT:-{{ zrok2_agent_console_port }}}"
+          volumes:
+            - zrok_env:/mnt
+
+      volumes:
+        zrok_env:
+
+- name: Write .env file
+  ansible.builtin.copy:
+    dest: "{{ zrok2_compose_dir }}/.env"
+    mode: "0600"
+    content: |
+      ZROK2_ENABLE_TOKEN={{ zrok2_account_token }}
+      {% if zrok2_api_endpoint | length > 0 %}
+      ZROK2_API_ENDPOINT={{ zrok2_api_endpoint }}
+      {% endif %}
+      ZROK2_AGENT_CONSOLE_PORT={{ zrok2_agent_console_port }}

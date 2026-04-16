@@ -1,0 +1,27 @@
+---
+# Step 6: Verify InfluxDB is configured
+# Doc: "InfluxDB Setup"
+# Bootstrap script: step_influxdb()
+
+- name: Verify influxdb is active
+  ansible.builtin.systemd:
+    name: influxdb
+    state: started
+  check_mode: true
+  register: influx_status
+  failed_when: influx_status.status.ActiveState != 'active'
+
+- name: Verify InfluxDB is listening on port 8086
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 8086
+    timeout: 10
+
+- name: Check InfluxDB setup is complete (not in initial setup mode)
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:8086/api/v2/setup"
+    method: GET
+    return_content: true
+  register: influx_setup
+  failed_when: >-
+    influx_setup.json.allowed | default(true) | bool

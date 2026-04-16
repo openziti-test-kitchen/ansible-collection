@@ -1,0 +1,63 @@
+---
+# Step 3: Run bootstrap.bash
+# Doc: "Run the bootstrap script"
+#
+# The input method determines how answers reach the script:
+# - env: environment dict, stdin closed
+# - stdin: stdin payload piped in
+# - interactive: expect module with prompt matching
+# - envfile: bootstrap.env pre-populated, stdin closed
+
+- name: Run controller bootstrap (parent env method)
+  when: input_method == 'env'
+  ansible.builtin.command:
+    cmd: "{{ ziti_controller_etc_dir }}/bootstrap.bash"
+    stdin: ""
+  environment:
+    ZITI_BOOTSTRAP: "true"
+    ZITI_BOOTSTRAP_CLUSTER: "{{ ziti_bootstrap_cluster | string | lower }}"
+    ZITI_CLUSTER_NODE_NAME: "{{ ziti_cluster_node_name }}"
+    ZITI_CLUSTER_TRUST_DOMAIN: "{{ ziti_cluster_trust_domain }}"
+    ZITI_CTRL_ADVERTISED_ADDRESS: "{{ ziti_ctrl_address }}"
+    ZITI_CTRL_ADVERTISED_PORT: "{{ ziti_ctrl_port | string }}"
+    ZITI_USER: "{{ ziti_admin_user }}"
+    ZITI_PWD: "{{ ziti_admin_password }}"
+    VERBOSE: "1"
+  args:
+    creates: "{{ ziti_controller_state_dir }}/config.yml"
+
+- name: Run controller bootstrap (stdin method)
+  when: input_method == 'stdin'
+  ansible.builtin.command:
+    cmd: "{{ ziti_controller_etc_dir }}/bootstrap.bash"
+    stdin: "{{ ziti_controller_stdin_payload }}"
+  environment:
+    VERBOSE: "1"
+  args:
+    creates: "{{ ziti_controller_state_dir }}/config.yml"
+
+- name: Run controller bootstrap (interactive method)
+  when: input_method == 'interactive'
+  ansible.builtin.expect:
+    command: "{{ ziti_controller_etc_dir }}/bootstrap.bash"
+    timeout: 120
+    responses:
+      "Generate a default config": "Y"
+      "Create a new cluster": "Y"
+      "Enter the unique name": "{{ ziti_cluster_node_name }}"
+      "Enter the trust domain": "{{ ziti_cluster_trust_domain }}"
+      "Enter DNS name": "{{ ziti_ctrl_address }}"
+      "Enter the controller port": "{{ ziti_ctrl_port }}"
+      "Enter the name of the default user": "{{ ziti_admin_user }}"
+      "Set password for": "{{ ziti_admin_password }}"
+    creates: "{{ ziti_controller_state_dir }}/config.yml"
+
+- name: Run controller bootstrap (envfile method)
+  when: input_method == 'envfile'
+  ansible.builtin.command:
+    cmd: "{{ ziti_controller_etc_dir }}/bootstrap.bash"
+    stdin: ""
+  environment:
+    VERBOSE: "1"
+  args:
+    creates: "{{ ziti_controller_state_dir }}/config.yml"

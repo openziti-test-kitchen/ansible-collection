@@ -1,0 +1,19 @@
+---
+# Step 11: Verify namespace created and mapped to frontend
+# Doc: "Create a Namespace" + "Map Namespace to Frontend"
+# Bootstrap script: step_create_namespace() + step_map_namespace_frontend()
+
+- name: List zrok2 namespaces
+  ansible.builtin.command:
+    cmd: zrok2 admin list namespaces
+  environment:
+    ZROK2_API_ENDPOINT: "{{ zrok2_api_endpoint }}"
+    ZROK2_ADMIN_TOKEN: "{{ zrok2_admin_token }}"
+  register: namespace_list
+  changed_when: false
+
+- name: Verify public namespace exists
+  ansible.builtin.assert:
+    that:
+      - "zrok2_dns_zone in namespace_list.stdout"
+    fail_msg: "Namespace '{{ zrok2_dns_zone }}' not found in: {{ namespace_list.stdout }}"

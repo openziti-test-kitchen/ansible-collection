@@ -1,0 +1,38 @@
+---
+# Step 7: Verify ctrl.yml was generated
+# Doc: "Configure the Controller"
+# Bootstrap script: step_ctrl_config()
+
+- name: Verify ctrl.yml exists
+  ansible.builtin.stat:
+    path: /etc/zrok2/ctrl.yml
+  register: ctrl_yml
+  failed_when: not ctrl_yml.stat.exists
+
+- name: Verify ctrl.yml is owned by zrok2-controller
+  ansible.builtin.assert:
+    that:
+      - ctrl_yml.stat.pw_name == 'zrok2-controller'
+      - ctrl_yml.stat.gr_name == 'zrok2-controller'
+    fail_msg: >-
+      ctrl.yml ownership is {{ ctrl_yml.stat.pw_name }}:{{ ctrl_yml.stat.gr_name }},
+      expected zrok2-controller:zrok2-controller
+
+- name: Verify ctrl.yml permissions (640)
+  ansible.builtin.assert:
+    that:
+      - ctrl_yml.stat.mode == '0640'
+    fail_msg: "ctrl.yml mode is {{ ctrl_yml.stat.mode }}, expected 0640"
+
+- name: Verify ctrl.yml contains required sections
+  ansible.builtin.command:
+    cmd: grep -c '{{ item }}' /etc/zrok2/ctrl.yml
+  loop:
+    - "admin:"
+    - "bridge:"
+    - "dynamic_proxy_controller:"
+    - "endpoint:"
+    - "metrics:"
+    - "store:"
+    - "ziti:"
+  changed_when: false

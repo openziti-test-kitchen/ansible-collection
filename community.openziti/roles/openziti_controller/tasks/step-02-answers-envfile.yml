@@ -1,0 +1,27 @@
+---
+# Step 2: Supply bootstrap answers via env file
+# Doc: pre-populate bootstrap.env before running bootstrap.bash
+#
+# Ansible module: ansible.builtin.template to render bootstrap.env
+
+- name: "Record input method: env file template"
+  ansible.builtin.debug:
+    msg: >-
+      Supplying controller answers via pre-populated bootstrap.env
+      for {{ ziti_cluster_node_name }}
+
+- name: Write controller bootstrap.env
+  ansible.builtin.copy:
+    dest: "{{ ziti_controller_etc_dir }}/bootstrap.env"
+    owner: root
+    group: root
+    mode: "0600"
+    content: |
+      ZITI_BOOTSTRAP=true
+      ZITI_BOOTSTRAP_CLUSTER={{ ziti_bootstrap_cluster | string | lower }}
+      ZITI_CLUSTER_NODE_NAME={{ ziti_cluster_node_name }}
+      ZITI_CLUSTER_TRUST_DOMAIN={{ ziti_cluster_trust_domain }}
+      ZITI_CTRL_ADVERTISED_ADDRESS={{ ziti_ctrl_address }}
+      ZITI_CTRL_ADVERTISED_PORT={{ ziti_ctrl_port }}
+      ZITI_USER={{ ziti_admin_user }}
+      ZITI_PWD={{ ziti_admin_password }}

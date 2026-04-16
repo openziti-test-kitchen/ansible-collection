@@ -1,0 +1,38 @@
+---
+# Step 13: Verify zrok2-controller, zrok2-frontend, zrok2-metrics services are active
+# Doc: "Running as systemd Services"
+# Bootstrap script: step_start_controller() + step_start_services()
+
+- name: Verify zrok2-controller is active
+  ansible.builtin.systemd:
+    name: zrok2-controller
+    state: started
+  check_mode: true
+  register: ctrl_svc
+  failed_when: ctrl_svc.status.ActiveState != 'active'
+
+- name: Verify zrok2-frontend is active
+  ansible.builtin.systemd:
+    name: zrok2-frontend
+    state: started
+  check_mode: true
+  register: fe_svc
+  failed_when: fe_svc.status.ActiveState != 'active'
+
+- name: Verify zrok2-metrics is active
+  ansible.builtin.systemd:
+    name: zrok2-metrics
+    state: started
+  check_mode: true
+  register: metrics_svc
+  failed_when: metrics_svc.status.ActiveState != 'active'
+
+- name: Verify zrok2 controller API is responding
+  ansible.builtin.uri:
+    url: "{{ zrok2_api_endpoint }}/api/v1/version"
+    validate_certs: false
+    status_code: 200
+  register: zrok2_version
+  retries: 10
+  delay: 3
+  until: zrok2_version.status == 200

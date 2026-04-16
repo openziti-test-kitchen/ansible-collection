@@ -1,0 +1,32 @@
+---
+# tasks file for quickstart_aws
+
+- name: Create AWS VPC
+  ec2_vpc_net:
+    name: "{{ vpc_name }}"
+    cidr_block: "{{ vpc_cidr_block }}"
+    region: "{{ aws_region }}"
+    state: present
+    tags:
+      Name: "{{ vpc_name }}"
+  register: vpc
+
+- name: Create AWS Subnet
+  ec2_vpc_subnet:
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ subnet_cidr_block }}"
+    az: "{{ aws_az }}"
+    region: "{{ aws_region }}"
+    state: present
+    tags:
+      Name: "{{ subnet_name }}"
+  register: subnet
+
+- name: Create AWS Internet Gateway
+  ec2_vpc_igw:
+    vpc_id: "{{ vpc.vpc.id }}"
+    region: "{{ aws_region }}"
+    state: present
+    tags:
+      Name: "{{ igw_name }}"
+  register: igw

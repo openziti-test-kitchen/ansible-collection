@@ -1,0 +1,9 @@
+---
+# Step 2: Install the openziti-router package
+# Doc: "Install the router package"
+
+- name: Install openziti-router package
+  ansible.builtin.package:
+    name:
+      - openziti-router
+    state: present

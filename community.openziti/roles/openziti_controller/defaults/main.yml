@@ -1,0 +1,30 @@
+---
+# openziti_controller defaults
+
+# Input methods to validate (last one is retained for subsequent phases)
+ziti_input_methods:
+  - env
+  - stdin
+  - interactive
+  - envfile
+
+# Controller identity
+ziti_cluster_node_name: ctrl1
+ziti_ctrl_address: "{{ ziti_cluster_node_name }}.{{ ziti_cluster_trust_domain }}"
+ziti_cluster_trust_domain: "{{ ansible_default_ipv4.address }}.sslip.io"
+ziti_ctrl_port: 1280
+
+# Admin credentials
+ziti_admin_user: admin
+ziti_admin_password: ""
+
+# Bootstrap control flags
+ziti_bootstrap: true
+ziti_bootstrap_cluster: true
+ziti_bootstrap_pki: true
+ziti_bootstrap_config: true
+ziti_bootstrap_database: true
+
+# State directories
+ziti_controller_state_dir: /var/lib/private/ziti-controller
+ziti_controller_etc_dir: /opt/openziti/etc/controller

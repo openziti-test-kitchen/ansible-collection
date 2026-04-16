@@ -1,0 +1,32 @@
+---
+# Step 1: Create admin account
+# Doc: "Create a user account" section of self-hosting Linux guide
+# Command: zrok2 admin create account <email> <password>
+
+- name: Generate account password if not provided
+  when: zrok2_account_password | length == 0
+  ansible.builtin.set_fact:
+    zrok2_account_password: >-
+      {{ lookup('community.general.random_string', length=24,
+         override_special='', override_all='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
+      }}
+
+- name: Create admin account
+  ansible.builtin.command:
+    cmd: >-
+      zrok2 admin create account
+      {{ zrok2_account_email }}
+      {{ zrok2_account_password }}
+  environment:
+    ZROK2_API_ENDPOINT: "{{ zrok2_api_endpoint }}"
+    ZROK2_ADMIN_TOKEN: "{{ zrok2_admin_token }}"
+  register: account_result
+  changed_when: account_result.rc == 0
+
+- name: Save account token
+  ansible.builtin.set_fact:
+    zrok2_account_token: "{{ account_result.stdout | trim }}"
+
+- name: Display account token
+  ansible.builtin.debug:
+    msg: "Account token: {{ zrok2_account_token }}"

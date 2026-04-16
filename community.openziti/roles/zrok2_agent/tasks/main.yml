@@ -1,0 +1,19 @@
+---
+# zrok2_agent - Phase 4: Admin Account + Agent Setup
+# Mirrors: zrok docs/self-hosting/linux/index.mdx (account section)
+#          zrok docs/how-tos/agent/linux-service.mdx
+
+- name: Create admin account
+  ansible.builtin.include_tasks: step-01-create-account.yml
+- name: Enable environment
+  ansible.builtin.include_tasks: step-02-enable.yml
+- name: Install agent package
+  ansible.builtin.include_tasks: step-03-install-agent.yml
+- name: Configure agent service
+  ansible.builtin.include_tasks: step-04-configure-agent.yml
+- name: Start agent
+  ansible.builtin.include_tasks: step-05-start-agent.yml
+- name: Create share
+  ansible.builtin.include_tasks: step-06-create-share.yml
+- name: Verify share
+  ansible.builtin.include_tasks: step-07-verify-share.yml

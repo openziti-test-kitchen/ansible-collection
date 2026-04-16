@@ -1,0 +1,25 @@
+---
+# zrok2_agent defaults
+
+# zrok2 API endpoint (set by zrok2_server role or playbook vars)
+zrok2_api_endpoint: ""
+
+# Admin token for creating accounts (set by zrok2_server role or playbook vars)
+zrok2_admin_token: ""
+
+# Default namespace for shares
+zrok2_default_namespace: public
+
+# Account to create
+zrok2_account_email: "admin@example.com"
+zrok2_account_password: ""
+
+# Agent runs as this user (non-root, systemd user service)
+zrok2_agent_user: "{{ ansible_user }}"
+
+# Share configuration for verification
+zrok2_share_backend: "http://localhost:8080"
+zrok2_share_name: ""
+
+# Directory containing pre-built zrok2 .deb/.rpm packages
+zrok2_package_dir: /srv/zrok/dist

@@ -1,0 +1,41 @@
+---
+# Step 2: Supply bootstrap answers via parent environment
+# Doc: "Bootstrap without prompts" — export ZITI_* vars, close stdin
+#
+# Ansible module: command with environment: dict
+# The environment vars are passed to bootstrap.bash.
+# Stdin is closed by providing empty stdin.
+#
+# IMPORTANT: The package-installed env files contain empty assignments
+# (e.g., ZITI_CTRL_ADVERTISED_ADDRESS=) that would overwrite the parent
+# environment when sourced by loadEnvFiles(). Truncating them ensures
+# the parent env vars take precedence.
+
+- name: "Record input method: parent environment"
+  ansible.builtin.debug:
+    msg: >-
+      Supplying controller answers via parent environment variables
+      for {{ ziti_cluster_node_name }}
+
+- name: Truncate bootstrap.env to prevent overwriting parent env
+  ansible.builtin.copy:
+    content: "# env method: answers supplied via parent environment\n"
+    dest: "{{ ziti_controller_etc_dir }}/bootstrap.env"
+    mode: "0644"
+
+- name: Truncate service.env to prevent overwriting parent env
+  ansible.builtin.copy:
+    content: |
+      # env method: answers supplied via parent environment
+      ZITI_BOOTSTRAP=true
+      ZITI_BOOTSTRAP_PKI=true
+      ZITI_BOOTSTRAP_CONFIG=true
+      ZITI_BOOTSTRAP_DATABASE=true
+      ZITI_BOOTSTRAP_CONSOLE=true
+      ZITI_CONSOLE_LOCATION=/opt/openziti/share/console
+      ZITI_AUTO_RENEW_CERTS=true
+      ZITI_RUNTIME=systemd
+      ZITI_CTRL_BOOTSTRAP_BASH={{ ziti_controller_etc_dir }}/bootstrap.bash
+      ZITI_ARGS=--
+    dest: "{{ ziti_controller_etc_dir }}/service.env"
+    mode: "0644"

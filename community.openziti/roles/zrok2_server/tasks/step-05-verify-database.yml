@@ -1,0 +1,38 @@
+---
+# Step 5: Verify database exists
+# Doc: "PostgreSQL Setup" or "SQLite3 Alternative"
+# Bootstrap script: step_database()
+
+- name: Verify PostgreSQL database exists
+  when: zrok2_store_type == 'postgres'
+  block:
+    - name: Verify postgresql is active
+      ansible.builtin.systemd:
+        name: postgresql
+        state: started
+      check_mode: true
+      register: pg_status
+      failed_when: pg_status.status.ActiveState != 'active'
+
+    - name: Check zrok2 database exists in PostgreSQL
+      ansible.builtin.command:
+        cmd: >-
+          sudo -u postgres psql -tAc
+          "SELECT 1 FROM pg_database WHERE datname='zrok2'"
+      register: pg_db_check
+      changed_when: false
+      failed_when: "'1' not in pg_db_check.stdout"
+
+    - name: Check zrok2 user exists in PostgreSQL
+      ansible.builtin.command:
+        cmd: >-
+          sudo -u postgres psql -tAc
+          "SELECT 1 FROM pg_roles WHERE rolname='zrok2'"
+      register: pg_user_check
+      changed_when: false
+      failed_when: "'1' not in pg_user_check.stdout"
+
+- name: Verify SQLite3 (no persistent check needed before first run)
+  when: zrok2_store_type == 'sqlite3'
+  ansible.builtin.debug:
+    msg: "SQLite3 mode — database will be created by zrok2 admin bootstrap"

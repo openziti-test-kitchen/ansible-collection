@@ -1,0 +1,31 @@
+---
+# Step 6: Create a named share
+# Doc: agent guide — creating shares via the agent
+# This creates a public share to verify the full pipeline works
+
+- name: Start a simple HTTP server for testing
+  ansible.builtin.command:
+    cmd: >-
+      python3 -m http.server 8080 --directory /tmp
+  become: true
+  become_user: "{{ zrok2_agent_user }}"
+  async: 300
+  poll: 0
+  register: http_server
+
+- name: Wait for test HTTP server to start
+  ansible.builtin.wait_for:
+    port: 8080
+    timeout: 10
+
+- name: Create a public share via the agent
+  ansible.builtin.command:
+    cmd: >-
+      zrok2 share public {{ zrok2_share_backend }}
+      --headless
+  become: true
+  become_user: "{{ zrok2_agent_user }}"
+  async: 30
+  poll: 0
+  register: share_job
+  changed_when: true

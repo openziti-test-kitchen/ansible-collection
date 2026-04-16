@@ -1,0 +1,31 @@
+---
+# Interactive step 5: Verify agent container is running
+# Doc: "Verify it's running"
+
+- name: Check agent container is running
+  ansible.builtin.command:
+    cmd: docker compose ps --format json
+    chdir: "{{ zrok2_compose_dir }}"
+  become: true
+  become_user: "{{ zrok2_agent_user }}"
+  register: compose_ps
+  changed_when: false
+  retries: 5
+  delay: 3
+  until: "'running' in compose_ps.stdout"
+
+- name: Verify agent responds inside container
+  ansible.builtin.command:
+    cmd: docker compose exec zrok-agent zrok2 agent status
+    chdir: "{{ zrok2_compose_dir }}"
+  become: true
+  become_user: "{{ zrok2_agent_user }}"
+  register: agent_status
+  changed_when: false
+  retries: 10
+  delay: 3
+  until: agent_status.rc == 0
+
+- name: Display agent status
+  ansible.builtin.debug:
+    var: agent_status.stdout_lines

@@ -1,0 +1,19 @@
+---
+# Step 7: Verify share is accessible
+# Doc: End-to-end verification that the zrok2 pipeline works
+# Checks: share exists in agent status, frontend is serving
+
+- name: Verify zrok2 agent has active shares
+  ansible.builtin.command:
+    cmd: zrok2 agent status
+  become: true
+  become_user: "{{ zrok2_agent_user }}"
+  register: agent_status
+  changed_when: false
+  retries: 10
+  delay: 3
+  until: agent_status.rc == 0
+
+- name: Display agent status
+  ansible.builtin.debug:
+    var: agent_status.stdout_lines

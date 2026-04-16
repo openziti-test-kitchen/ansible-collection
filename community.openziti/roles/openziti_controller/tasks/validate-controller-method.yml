@@ -1,0 +1,48 @@
+---
+# Validate a single controller bootstrap input method.
+# Called in a loop by main.yml with loop_var: input_method, index_var: method_index.
+# Nukes state after each iteration except the last.
+
+- name: "Set controller identity for iteration {{ method_index + 1 }}"
+  ansible.builtin.set_fact:
+    ziti_cluster_node_name: "ctrl{{ method_index + 1 }}"
+    ziti_ctrl_address: >-
+      ctrl{{ method_index + 1 }}.{{ ziti_cluster_trust_domain }}
+
+- name: "Supply answers via {{ input_method }} method"
+  ansible.builtin.include_tasks: "step-02-answers-{{ input_method }}.yml"
+
+- name: Run bootstrap
+  ansible.builtin.include_tasks: step-03-bootstrap.yml
+
+- name: Enable and start controller
+  ansible.builtin.include_tasks: step-04-start.yml
+
+- name: Verify controller is listening
+  ansible.builtin.include_tasks: step-05-verify.yml
+
+- name: Log in with ziti edge login
+  ansible.builtin.include_tasks: step-06-login.yml
+
+# Tear down for all but the last iteration
+- name: "Tear down ctrl{{ method_index + 1 }} (not final)"
+  when: method_index < (ziti_input_methods | length - 1)
+  block:
+    - name: Stop controller service
+      ansible.builtin.systemd:
+        name: ziti-controller
+        state: stopped
+        enabled: false
+
+    - name: Remove controller state directory
+      ansible.builtin.file:
+        path: "{{ ziti_controller_state_dir }}"
+        state: absent
+
+    - name: Remove bootstrap answer files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ ziti_controller_etc_dir }}/bootstrap.env"
+        - "{{ ziti_controller_etc_dir }}/service.env"

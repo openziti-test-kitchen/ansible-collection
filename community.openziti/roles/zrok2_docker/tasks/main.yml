@@ -1,0 +1,23 @@
+---
+# zrok2_docker - Phase 5: Docker Share Guide
+# Mirrors: zrok docs/how-tos/docker-share/index.mdx
+# Dispatches to bind-mount or self-contained approach
+
+- name: Run bind-mount (interactive) Docker approach
+  when: zrok2_docker_approach == 'bind_mount'
+  ansible.builtin.include_tasks: "interactive/{{ item }}"
+  loop:
+    - step-01-install-docker.yml
+    - step-02-pull-image.yml
+    - step-03-enable.yml
+    - step-04-run-agent.yml
+    - step-05-verify.yml
+
+- name: Run self-contained Docker approach
+  when: zrok2_docker_approach == 'self_contained'
+  ansible.builtin.include_tasks: "self-contained/{{ item }}"
+  loop:
+    - step-01-build-image.yml
+    - step-02-configure.yml
+    - step-03-run.yml
+    - step-04-verify.yml
